@@ -23,7 +23,8 @@ export const useCancelJob = () => {
     )
     const { show: showError } = useAlert(
         ({ message }: { message: string }) =>
-            i18n.t('Could not cancel job: {{message}}', { message }),
+            // No colon: the i18n extractor reads ':' as a namespace separator.
+            i18n.t('Could not cancel job — {{message}}', { message }),
         { critical: true }
     )
 

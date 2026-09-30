@@ -13,41 +13,45 @@ export interface JobProgress {
     text: string
 }
 
+const LOOP_COUNTER_REGEX = /\[(\d+)\/(\d+)\]/
+
 /**
  * Derive a running job's progress from its task history (newest task first).
  *
- * Faithful to the original behaviour:
- *  - LOOP tasks carry a `[current/total]` counter -> percentage; the action
- *    text is the most recent non-LOOP message (falling back to "Processing").
- *  - Otherwise, show the latest INFO message.
- *  - If there is nothing useful to show, fall back to "Running".
+ * Mirrors the original tool, which only updated the progress line on a LOOP
+ * task with a `[current/total]` counter or on a non-empty INFO message and
+ * otherwise left the previous line on screen. Being stateless, we get the same
+ * effect by scanning back past DEBUG/WARN/ERROR (and counter-less LOOP) lines
+ * to the most recent useful entry:
+ *  - LOOP with counter -> percentage; the action text is the most recent
+ *    INFO message (falling back to "Processing").
+ *  - INFO -> its message.
+ *  - Nothing useful -> "Running".
  */
 export const deriveJobProgress = (tasks: Task[] | undefined): JobProgress => {
-    const latest = tasks?.[0]
+    const latest = tasks?.find(
+        (t) =>
+            (t.level === 'LOOP' && LOOP_COUNTER_REGEX.test(t.message ?? '')) ||
+            (t.level === 'INFO' && Boolean(t.message?.trim()))
+    )
     if (!latest) {
         return { percentage: null, text: 'Running' }
     }
 
-    if (latest.level === 'LOOP' && latest.message) {
-        const match = latest.message.match(/\[(\d+)\/(\d+)\]/)
-        if (match) {
-            const current = parseInt(match[1], 10)
-            const total = parseInt(match[2], 10)
-            const percentage =
-                total > 0 ? Math.round((current / total) * 100) : null
-            const actionTask = tasks?.find(
-                (task) => task.level !== 'LOOP' && Boolean(task.message?.trim())
-            )
-            const action = actionTask?.message?.trim() || 'Processing'
-            return { percentage, text: action }
-        }
+    if (latest.level === 'LOOP') {
+        const match = latest.message!.match(LOOP_COUNTER_REGEX)!
+        const current = parseInt(match[1], 10)
+        const total = parseInt(match[2], 10)
+        const percentage =
+            total > 0 ? Math.round((current / total) * 100) : null
+        const actionTask = tasks?.find(
+            (task) => task.level === 'INFO' && Boolean(task.message?.trim())
+        )
+        const action = actionTask?.message?.trim() || 'Processing'
+        return { percentage, text: action }
     }
 
-    if (latest.level === 'INFO' && latest.message?.trim()) {
-        return { percentage: null, text: latest.message.trim() }
-    }
-
-    return { percentage: null, text: 'Running' }
+    return { percentage: null, text: latest.message!.trim() }
 }
 
 export interface PredictionSummary {

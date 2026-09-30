@@ -70,13 +70,13 @@ def main():
         result["checks"]["upcoming_jobs_heading"] = page.get_by_text(
             "Upcoming jobs", exact=True).count() > 0
 
-        # Count "Show details" (last jobs) + "View details" (running) buttons.
-        show_details = page.get_by_role("button", name="Show details")
-        result["checks"]["show_details_buttons"] = show_details.count()
+        # Count "View details" buttons (last jobs + running cards).
+        show_details = page.get_by_role("button", name="View details")
+        result["checks"]["view_details_buttons"] = show_details.count()
 
         page.screenshot(path=f"{SHOT_DIR}/{LABEL}-overview.png", full_page=True)
 
-        # Open a details modal if any "Show details" button exists.
+        # Open a details modal if any "View details" button exists.
         if show_details.count() > 0:
             show_details.first.click()
             page.get_by_role("heading", name="Job details").or_(

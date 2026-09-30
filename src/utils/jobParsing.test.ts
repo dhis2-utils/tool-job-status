@@ -76,6 +76,40 @@ describe('deriveJobProgress', () => {
             text: 'Running',
         })
     })
+
+    it('keeps the last LOOP progress when a WARN/ERROR line is interleaved', () => {
+        const tasks = [
+            task({ level: 'WARN', message: 'Skipped a work item' }),
+            task({ level: 'LOOP', message: 'Populating tables [3/10]' }),
+            task({ level: 'INFO', message: 'Populating analytics tables' }),
+        ]
+        expect(deriveJobProgress(tasks)).toEqual({
+            percentage: 30,
+            text: 'Populating analytics tables',
+        })
+    })
+
+    it('keeps the last INFO message when a DEBUG line is newest', () => {
+        const tasks = [
+            task({ level: 'DEBUG', message: 'internal detail' }),
+            task({ level: 'INFO', message: 'Generating resource tables' }),
+        ]
+        expect(deriveJobProgress(tasks)).toEqual({
+            percentage: null,
+            text: 'Generating resource tables',
+        })
+    })
+
+    it('skips a LOOP line without a counter and uses the earlier one', () => {
+        const tasks = [
+            task({ level: 'LOOP', message: 'no counter here' }),
+            task({ level: 'LOOP', message: '[4/8]' }),
+        ]
+        expect(deriveJobProgress(tasks)).toEqual({
+            percentage: 50,
+            text: 'Processing',
+        })
+    })
 })
 
 describe('parsePredictionSummary', () => {

@@ -1,0 +1,14 @@
+# Generated / third-party
+node_modules
+.d2
+build
+src/locales
+pnpm-lock.yaml
+.pnpm-store
+
+# Local settings
+.claude
+.vscode
+
+# Historical review/spec documents, kept as written
+docs

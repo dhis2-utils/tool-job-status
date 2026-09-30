@@ -10,6 +10,10 @@ publicHoistPattern:
     - 'styled-jsx'
     - '@dhis2/app-adapter'
     - '@dhis2/pwa'
+    # @dhis2/cli-app-scripts references these two Babel plugins by bare name in
+    # its jest babel config, so Babel resolves them from the project root.
+    - '@babel/plugin-transform-private-methods'
+    - '@babel/plugin-transform-private-property-in-object'
 
 onlyBuiltDependencies:
     - '@dhis2/cli-helpers-engine'

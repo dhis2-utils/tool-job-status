@@ -1,7 +1,7 @@
-import { screen, within } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { CancelJobButton } from '@/components/CancelJobButton'
+import { CANCEL_GRACE_MS, CancelJobButton } from '@/components/CancelJobButton'
 import * as useCanCancelJobsModule from '@/hooks/useCanCancelJobs'
 import * as useCancelJobModule from '@/hooks/useCancelJob'
 import { renderWithProviders } from '@/test-utils'
@@ -25,15 +25,17 @@ beforeEach(() => {
         cancelJob: cancelSpy,
         isCancelling: false,
     })
-    jest.spyOn(useCanCancelJobsModule, 'useCanCancelJobs').mockReturnValue(true)
+    jest.spyOn(useCanCancelJobsModule, 'useCanCancelJobs').mockReturnValue(
+        () => true
+    )
 })
 
 afterEach(() => jest.resetAllMocks())
 
 describe('CancelJobButton', () => {
-    it('renders nothing when the user lacks the authority', () => {
+    it('renders nothing when the user may not cancel this job', () => {
         jest.spyOn(useCanCancelJobsModule, 'useCanCancelJobs').mockReturnValue(
-            false
+            () => false
         )
         const { container } = renderWithProviders(<CancelJobButton job={job} />)
         expect(container).toBeEmptyDOMElement()
@@ -91,5 +93,62 @@ describe('CancelJobButton', () => {
         const trigger = screen.getByTestId('cancel-job-button')
         expect(trigger).toBeDisabled()
         expect(trigger).toHaveTextContent('Cancelling…')
+    })
+
+    it('re-enables the button if the job is still running after the grace window', async () => {
+        jest.useFakeTimers()
+        try {
+            cancelSpy.mockImplementation((_id, opts) => {
+                opts?.onSuccess?.()
+                opts?.onSettled?.()
+            })
+            const user = userEvent.setup({
+                advanceTimers: jest.advanceTimersByTime,
+            })
+            renderWithProviders(<CancelJobButton job={job} />)
+
+            await user.click(screen.getByTestId('cancel-job-button'))
+            const strip = screen.getByTestId('dhis2-uicore-buttonstrip')
+            await user.click(
+                within(strip).getByRole('button', { name: 'Cancel job' })
+            )
+            expect(screen.getByTestId('cancel-job-button')).toBeDisabled()
+
+            act(() => {
+                jest.advanceTimersByTime(CANCEL_GRACE_MS)
+            })
+
+            const trigger = screen.getByTestId('cancel-job-button')
+            expect(trigger).toBeEnabled()
+            expect(trigger).toHaveTextContent('Cancel job')
+        } finally {
+            jest.useRealTimers()
+        }
+    })
+
+    it('resets the pending state when a new run of the job starts', async () => {
+        cancelSpy.mockImplementation((_id, opts) => {
+            opts?.onSuccess?.()
+            opts?.onSettled?.()
+        })
+        const user = userEvent.setup()
+        const firstRun = { ...job, lastExecuted: '2026-09-03T10:00:00.000' }
+        const { rerender } = renderWithProviders(
+            <CancelJobButton job={firstRun} />
+        )
+
+        await user.click(screen.getByTestId('cancel-job-button'))
+        const strip = screen.getByTestId('dhis2-uicore-buttonstrip')
+        await user.click(
+            within(strip).getByRole('button', { name: 'Cancel job' })
+        )
+        expect(screen.getByTestId('cancel-job-button')).toBeDisabled()
+
+        rerender(
+            <CancelJobButton
+                job={{ ...job, lastExecuted: '2026-09-03T10:05:00.000' }}
+            />
+        )
+        expect(screen.getByTestId('cancel-job-button')).toBeEnabled()
     })
 })

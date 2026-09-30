@@ -21,6 +21,7 @@ const JOB_FIELDS = [
     'nextExecutionTime',
     'queueName',
     'queuePosition',
+    'executedBy',
 ].join(',')
 
 /** Poll cadence for job + task data. */
@@ -67,14 +68,17 @@ export const useJobs = () => {
 
     const jobs = useMemo<EnhancedJob[]>(() => {
         const configs = configQuery.data?.jobConfigurations ?? []
-        const tasks = tasksQuery.data
+        // react-query keeps the last good data when a refetch fails. If the
+        // task poll is failing while configs keep refreshing, that frozen map
+        // would keep a finished job "running", so fall back to jobStatus only.
+        const tasks = tasksQuery.isError ? undefined : tasksQuery.data
         return configs.map((job) => ({
             ...job,
             isRunning:
                 job.jobStatus === 'RUNNING' ||
                 isTaskRunning(tasks?.[job.jobType]?.[job.id]),
         }))
-    }, [configQuery.data, tasksQuery.data])
+    }, [configQuery.data, tasksQuery.data, tasksQuery.isError])
 
     return {
         jobs,

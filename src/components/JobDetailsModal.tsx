@@ -27,6 +27,8 @@ import {
 
 type JobDetailsModalProps = {
     job: EnhancedJob
+    /** False once the job has disappeared from the job list (deleted/cleaned up). */
+    jobExists?: boolean
     onClose: () => void
 }
 
@@ -34,12 +36,14 @@ const MAX_HISTORY = 5
 
 export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
     job,
+    jobExists = true,
     onClose,
 }) => {
-    // Poll only while the job is running; a finished job's history is static.
+    // Poll only while the job is running; a finished job's history is static,
+    // and a deleted job has nothing new to fetch.
     const { tasks, isLoading, error } = useJobTasks(job.jobType, job.id, {
         enabled: true,
-        poll: job.isRunning,
+        poll: job.isRunning && jobExists,
     })
 
     const predictionSummary =
@@ -56,6 +60,19 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
                 {job.displayName ? ` — ${job.displayName}` : ''}
             </ModalTitle>
             <ModalContent>
+                {!jobExists && (
+                    <NoticeBox
+                        warning
+                        title={i18n.t(
+                            'This job no longer exists on the server'
+                        )}
+                    >
+                        {i18n.t(
+                            'It was deleted or cleaned up. The details below are the last ones fetched.'
+                        )}
+                    </NoticeBox>
+                )}
+
                 {isLoading && (
                     <div className={styles.center}>
                         <CircularLoader small />
