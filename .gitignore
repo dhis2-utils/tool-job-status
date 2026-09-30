@@ -1,8 +1,12 @@
-.tmp
-compiled
-build
-manifest.webapp
+# DHIS2 Platform
 node_modules
-.vscode
-bin
-d2auth.json
+.d2
+src/locales
+build
+
+# Package manager store (created when pnpm runs in-repo)
+.pnpm-store
+
+# Misc
+.DS_Store
+*.log

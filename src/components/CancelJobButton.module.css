@@ -1,0 +1,10 @@
+.text {
+    margin: 0 0 var(--spacers-dp8);
+    color: var(--colors-grey900);
+}
+
+.jobName {
+    margin: 0;
+    font-weight: 500;
+    color: var(--colors-grey900);
+}

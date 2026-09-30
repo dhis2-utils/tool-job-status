@@ -1,0 +1,23 @@
+.progress {
+    margin-block: var(--spacers-dp8);
+    padding: var(--spacers-dp8);
+    background-color: var(--colors-grey100);
+    border-radius: 3px;
+    border-inline-start: 4px solid var(--colors-blue600);
+    min-block-size: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacers-dp8);
+    justify-content: center;
+}
+
+.loader {
+    inline-size: 100%;
+}
+
+.text {
+    text-align: center;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--colors-grey900);
+}

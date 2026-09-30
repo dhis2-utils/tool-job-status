@@ -1,0 +1,156 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: i18next-conv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"POT-Creation-Date: 2026-07-14T12:49:05.605Z\n"
+"PO-Revision-Date: 2026-07-14T12:49:05.607Z\n"
+
+msgid "Cancelling…"
+msgstr "Cancelling…"
+
+msgid "Cancel job"
+msgstr "Cancel job"
+
+msgid "Cancel this job?"
+msgstr "Cancel this job?"
+
+msgid ""
+"This asks the server to stop the running job. It stops at its next "
+"checkpoint, which can take a few seconds; work already completed is kept."
+msgstr ""
+"This asks the server to stop the running job. It stops at its next "
+"checkpoint, which can take a few seconds; work already completed is kept."
+
+msgid "Keep running"
+msgstr "Keep running"
+
+msgid "Analytics table (manual run)"
+msgstr "Analytics table (manual run)"
+
+msgid "Job {{index}} of {{total}}"
+msgstr "Job {{index}} of {{total}}"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Years"
+msgstr "Years"
+
+msgid "All"
+msgstr "All"
+
+msgid "Job type"
+msgstr "Job type"
+
+msgid "Last executed"
+msgstr "Last executed"
+
+msgid "Last runtime"
+msgstr "Last runtime"
+
+msgid "View details"
+msgstr "View details"
+
+msgid "Job details"
+msgstr "Job details"
+
+msgid "Error loading task details"
+msgstr "Error loading task details"
+
+msgid "An unknown error occurred"
+msgstr "An unknown error occurred"
+
+msgid "Prediction summary"
+msgstr "Prediction summary"
+
+msgid "No task details available"
+msgstr "No task details available"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Next run"
+msgstr "Next run"
+
+msgid "No parameters available"
+msgstr "No parameters available"
+
+msgid "Parameter"
+msgstr "Parameter"
+
+msgid "Value"
+msgstr "Value"
+
+msgid "Element"
+msgstr "Element"
+
+msgid "Included"
+msgstr "Included"
+
+msgid "Yes"
+msgstr "Yes"
+
+msgid "No"
+msgstr "No"
+
+msgid "Skipped programs"
+msgstr "Skipped programs"
+
+msgid "{{percentage}}% complete"
+msgstr "{{percentage}}% complete"
+
+msgid "Updated {{seconds}}s ago"
+msgstr "Updated {{seconds}}s ago"
+
+msgid "Updated {{minutes}}m ago"
+msgstr "Updated {{minutes}}m ago"
+
+msgid "Background jobs"
+msgstr "Background jobs"
+
+msgid "Refresh"
+msgstr "Refresh"
+
+msgid "Error loading jobs"
+msgstr "Error loading jobs"
+
+msgid "Last jobs"
+msgstr "Last jobs"
+
+msgid "No recent jobs"
+msgstr "No recent jobs"
+
+msgid "Upcoming jobs"
+msgstr "Upcoming jobs"
+
+msgid "No upcoming jobs"
+msgstr "No upcoming jobs"
+
+msgid "Unknown"
+msgstr "Unknown"
+
+msgid "No running jobs"
+msgstr "No running jobs"
+
+msgid "Now running"
+msgstr "Now running"
+
+msgid "Cancellation requested — it can take a few seconds for the job to stop"
+msgstr "Cancellation requested — it can take a few seconds for the job to stop"
+
+msgid "unknown error"
+msgstr "unknown error"
+
+msgctxt "Application title"
+msgid "__MANIFEST_APP_TITLE"
+msgstr "Job Status"
+
+msgctxt "Application description"
+msgid "__MANIFEST_APP_DESCRIPTION"
+msgstr "Tool to monitor DHIS2 background jobs"

@@ -1,0 +1,9 @@
+.table {
+    margin-block-start: var(--spacers-dp8);
+}
+
+.empty {
+    margin: var(--spacers-dp8) 0 0;
+    color: var(--colors-grey600);
+    font-size: 13px;
+}
