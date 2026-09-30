@@ -1,16 +1,20 @@
 # DHIS2 Job Status Tool
 
-A DHIS2 application for monitoring the execution of background jobs and queues within a
-DHIS2 instance — currently running tasks/jobs (with live progress), recently completed
-jobs, and upcoming scheduled jobs. It does a best-effort job of showing correct
-information as provided by the API, but cannot be guaranteed to always show correct job
-info.
-
+> ![Maturity: Validated](https://img.shields.io/badge/maturity-Validated-yellow)  
+> Intended use: provide a visual overview of running and scheduled jobs.  
+> Maintainers: HISP Centre implementation team.
+>
 > **Warning**
 > This tool is intended for system administrators. It is available as a DHIS2 app but has
 > not been through the same rigorous testing as core apps. Use it with care, and test in a
 > development environment first.
 
+A DHIS2 application for monitoring the execution of background jobs and queues within a
+DHIS2 instance — currently running tasks/jobs (with live progress), recently completed
+jobs, and upcoming scheduled jobs. It does a best-effort job of showing correct
+information as provided by the API, but cannot be guaranteed to always show correct job
+info.
+ 
 Built with the [DHIS2 Application Platform](https://platform.dhis2.nu/) (React + TypeScript,
 `@dhis2/ui`, `@dhis2/app-runtime`, TanStack Query). This replaces the previous vanilla-JS
 (jQuery + Materialize) implementation — see
