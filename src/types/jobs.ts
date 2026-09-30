@@ -79,6 +79,8 @@ export interface JobConfiguration {
     queuePosition?: number
     cronExpression?: string
     delay?: number
+    /** UID of the user who triggered a manual/async run (if any). */
+    executedBy?: string
 }
 
 export interface JobConfigurationsResponse {

@@ -7,6 +7,9 @@ build
 # Package manager store (created when pnpm runs in-repo)
 .pnpm-store
 
+# Local agent/editor settings
+.claude/
+
 # Misc
 .DS_Store
 *.log

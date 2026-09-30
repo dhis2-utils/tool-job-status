@@ -18,7 +18,7 @@ jest.mock('@/hooks/useCancelJob', () => ({
     useCancelJob: () => ({ cancelJob: jest.fn(), isCancelling: false }),
 }))
 jest.mock('@/hooks/useCanCancelJobs', () => ({
-    useCanCancelJobs: () => true,
+    useCanCancelJobs: () => () => true,
 }))
 
 const job = (overrides: Partial<EnhancedJob>): EnhancedJob => ({

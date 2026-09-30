@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-07-14T12:49:05.605Z\n"
-"PO-Revision-Date: 2026-07-14T12:49:05.607Z\n"
+"POT-Creation-Date: 2026-09-03T19:24:38.092Z\n"
+"PO-Revision-Date: 2026-09-03T19:24:38.092Z\n"
 
 msgid "Cancelling…"
 msgstr "Cancelling…"
@@ -57,6 +57,12 @@ msgstr "View details"
 msgid "Job details"
 msgstr "Job details"
 
+msgid "This job no longer exists on the server"
+msgstr "This job no longer exists on the server"
+
+msgid "It was deleted or cleaned up. The details below are the last ones fetched."
+msgstr "It was deleted or cleaned up. The details below are the last ones fetched."
+
 msgid "Error loading task details"
 msgstr "Error loading task details"
 
@@ -105,12 +111,6 @@ msgstr "Skipped programs"
 msgid "{{percentage}}% complete"
 msgstr "{{percentage}}% complete"
 
-msgid "Updated {{seconds}}s ago"
-msgstr "Updated {{seconds}}s ago"
-
-msgid "Updated {{minutes}}m ago"
-msgstr "Updated {{minutes}}m ago"
-
 msgid "Background jobs"
 msgstr "Background jobs"
 
@@ -141,15 +141,24 @@ msgstr "No running jobs"
 msgid "Now running"
 msgstr "Now running"
 
+msgid "Updated {{seconds}}s ago"
+msgstr "Updated {{seconds}}s ago"
+
+msgid "Updated {{minutes}}m ago"
+msgstr "Updated {{minutes}}m ago"
+
 msgid "Cancellation requested — it can take a few seconds for the job to stop"
 msgstr "Cancellation requested — it can take a few seconds for the job to stop"
+
+msgid "Could not cancel job — {{message}}"
+msgstr "Could not cancel job — {{message}}"
 
 msgid "unknown error"
 msgstr "unknown error"
 
 msgctxt "Application title"
 msgid "__MANIFEST_APP_TITLE"
-msgstr "Job Status"
+msgstr "Job Status Tool"
 
 msgctxt "Application description"
 msgid "__MANIFEST_APP_DESCRIPTION"

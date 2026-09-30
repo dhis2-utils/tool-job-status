@@ -1,7 +1,7 @@
 {
-    "name": "scaffold-tmp",
+    "name": "tool-job-status",
     "version": "1.0.0",
-    "description": "",
+    "description": "Tool to monitor DHIS2 background jobs",
     "license": "BSD-3-Clause",
     "private": true,
     "packageManager": "pnpm@10.13.1",

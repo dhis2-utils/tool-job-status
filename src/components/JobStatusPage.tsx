@@ -5,8 +5,8 @@ import styles from './JobStatusPage.module.css'
 import { JobDetailsModal } from '@/components/JobDetailsModal'
 import { JobList } from '@/components/JobList'
 import { RunningJobs } from '@/components/RunningJobs'
+import { UpdatedAgo } from '@/components/UpdatedAgo'
 import { useJobs } from '@/hooks/useJobs'
-import { useNow } from '@/hooks/useNow'
 import type { EnhancedJob } from '@/types/jobs'
 
 const MAX_LAST_JOBS = 6
@@ -17,28 +17,10 @@ const byDateDesc = (a?: string, b?: string) =>
 const byDateAsc = (a?: string, b?: string) =>
     new Date(a ?? 0).getTime() - new Date(b ?? 0).getTime()
 
-const formatUpdatedAgo = (dataUpdatedAt: number, now: Date): string => {
-    if (!dataUpdatedAt) {
-        return ''
-    }
-    const seconds = Math.max(
-        0,
-        Math.round((now.getTime() - dataUpdatedAt) / 1000)
-    )
-    // Avoid an interpolation param literally named `count`: the DHIS2 i18n
-    // extractor treats it as a pluralization key and drops the string.
-    if (seconds < 60) {
-        return i18n.t('Updated {{seconds}}s ago', { seconds })
-    }
-    const minutes = Math.floor(seconds / 60)
-    return i18n.t('Updated {{minutes}}m ago', { minutes })
-}
-
 export const JobStatusPage: React.FC = () => {
     const { jobs, isLoading, error, isFetching, dataUpdatedAt, refetch } =
         useJobs()
-    const now = useNow(1000)
-    const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
+    const [selectedJob, setSelectedJob] = useState<EnhancedJob | null>(null)
 
     // Last / upcoming lists, mirroring the original tool's filtering. Excludes
     // HOUSEKEEPING and any currently-running job.
@@ -61,13 +43,16 @@ export const JobStatusPage: React.FC = () => {
         return { lastJobs, upcomingJobs }
     }, [jobs])
 
-    // Look the selected job up from the live list (rather than storing a
-    // snapshot) so the modal reflects up-to-date running state.
-    const selectedJob: EnhancedJob | null =
-        jobs.find((job) => job.id === selectedJobId) ?? null
+    // Prefer the live entry so the modal tracks running state, but keep the
+    // snapshot taken when it was opened: the server deletes finished once-off
+    // jobs after a while, and the modal must not vanish while being read.
+    const liveSelectedJob = selectedJob
+        ? jobs.find((job) => job.id === selectedJob.id)
+        : undefined
+    const modalJob = liveSelectedJob ?? selectedJob
 
     const handleViewDetails = useCallback(
-        (job: EnhancedJob) => setSelectedJobId(job.id),
+        (job: EnhancedJob) => setSelectedJob(job),
         []
     )
 
@@ -84,9 +69,10 @@ export const JobStatusPage: React.FC = () => {
             <header className={styles.header}>
                 <h1 className={styles.title}>{i18n.t('Background jobs')}</h1>
                 <div className={styles.headerActions}>
-                    <span className={styles.updated}>
-                        {formatUpdatedAgo(dataUpdatedAt, now)}
-                    </span>
+                    <UpdatedAgo
+                        dataUpdatedAt={dataUpdatedAt}
+                        className={styles.updated}
+                    />
                     <Button
                         small
                         secondary
@@ -115,7 +101,6 @@ export const JobStatusPage: React.FC = () => {
                     title={i18n.t('Last jobs')}
                     jobs={lastJobs}
                     variant="last"
-                    now={now}
                     onViewDetails={handleViewDetails}
                     emptyText={i18n.t('No recent jobs')}
                 />
@@ -123,16 +108,16 @@ export const JobStatusPage: React.FC = () => {
                     title={i18n.t('Upcoming jobs')}
                     jobs={upcomingJobs}
                     variant="upcoming"
-                    now={now}
                     onViewDetails={handleViewDetails}
                     emptyText={i18n.t('No upcoming jobs')}
                 />
             </section>
 
-            {selectedJob && (
+            {modalJob && (
                 <JobDetailsModal
-                    job={selectedJob}
-                    onClose={() => setSelectedJobId(null)}
+                    job={modalJob}
+                    jobExists={Boolean(liveSelectedJob)}
+                    onClose={() => setSelectedJob(null)}
                 />
             )}
         </div>
