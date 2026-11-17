@@ -12,7 +12,7 @@
 |---|---|---|---|
 | v43-sl | 2.43.0.1 | Sierra Leone v43 | `admin`/`district` |
 | v42-sl | 2.42.5.1 | Sierra Leone v42 | `admin`/`district` |
-| v41-laos | 2.41.9 | Laos HMIS demo v41 | seed's `admin` is **disabled**; used `local_admin`/`district` |
+| v41-laos | 2.41.9 | Laos HMIS demo v41 | seed's `admin` is **disabled**; used a separate superuser |
 
 Running-job / live-progress paths were exercised by triggering
 `POST /api/resourceTables/analytics` on each instance and observing the app while the
@@ -57,7 +57,7 @@ SCHEDULED. Screenshots: `v43-queue-running.png` (as found) and `v43-queue-fixed.
   (nested map `{ [jobType]: { [jobId]: Task[] } }`), `system/tasks/{type}/{id}`
   (`Task[]`). No version-gating needed; confirmed live on all three.
 - **v41 Laos `admin` disabled** — an instance/seed property, not an app issue.
-  Handled by using the `local_admin` superuser.
+  Handled by using a separate superuser.
 - **2.42 global-shell boundary**: on 2.43 the installed app is served inside the
   global-shell iframe (`/apps/job-status` → iframe `/api/apps/job-status/index.html`).
   The app renders correctly there — the migration correctly relies on the platform

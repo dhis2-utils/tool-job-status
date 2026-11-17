@@ -13,3 +13,7 @@ build
 # Misc
 .DS_Store
 *.log
+
+# e2e/run.sh output and Python caches
+e2e/results/
+__pycache__/

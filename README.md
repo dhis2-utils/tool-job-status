@@ -3,96 +3,61 @@
 > ![Maturity: Validated](https://img.shields.io/badge/maturity-Validated-yellow)  
 > Intended use: provide a visual overview of running and scheduled jobs.  
 > Maintainers: HISP Centre implementation team.
->
-> **Warning**
-> This tool is intended for system administrators. It is available as a DHIS2 app but has
-> not been through the same rigorous testing as core apps. Use it with care, and test in a
-> development environment first.
 
-A DHIS2 application for monitoring the execution of background jobs and queues within a
-DHIS2 instance — currently running tasks/jobs (with live progress), recently completed
-jobs, and upcoming scheduled jobs. It does a best-effort job of showing correct
-information as provided by the API, but cannot be guaranteed to always show correct job
-info.
+> [!WARNING]
+> This tool is intended for system administrators. It is available as a DHIS2 app but has not been through the same rigorous testing as core apps. Use it with care, and test in a development environment first.
 
-Built with the [DHIS2 Application Platform](https://platform.dhis2.nu/) (React + TypeScript,
-`@dhis2/ui`, `@dhis2/app-runtime`, TanStack Query). This replaces the previous vanilla-JS
-(jQuery + Materialize) implementation — see
-`docs/superpowers/specs/2026-07-14-app-platform-migration-design.md` for the migration
-design.
+The Job Status Tool shows the background jobs of a DHIS2 instance: running jobs with live progress, recently finished jobs and the next scheduled runs, and it lets an administrator cancel a running job. The user documentation is in [`docs/user/`](docs/user/tool-job-status.md).
 
-## Features
+Built with the [DHIS2 Application Platform](https://developers.dhis2.org/docs/app-platform/getting-started) (React, TypeScript, `@dhis2/ui`, `@dhis2/app-runtime`, TanStack Query).
 
-- **Running jobs** — polls `jobConfigurations` and `system/tasks` every 3s, showing
-  running jobs grouped by queue (with position) or under "Now running", each with a live
-  progress line derived from the job's task messages.
-- **Cancel a running job** (DHIS2 v41+) — asks the server to stop the job at its next
-  checkpoint (`POST /api/jobConfigurations/{id}/cancel`), after a confirmation dialog.
-  The button is shown to superusers, users with the `F_PERFORM_MAINTENANCE` authority, and the user
-  who started the job — the same rule the server enforces.
-- **Last / Upcoming jobs** — recently finished jobs and the next scheduled runs.
-- **Job details modal** — task history, with special handling for `PREDICTOR` jobs
-  (prediction summary) and `ANALYTICS_TABLE` jobs (parameter breakdown).
+## Supported DHIS2 versions
 
-Compatible with DHIS2 **v40–v43** (tested end-to-end on all four).
+2.40 to 2.43. Cancelling a job needs 2.41 or later; on 2.40 the Cancel button is hidden, because 2.40 has no cancel endpoint. `minDHIS2Version` in `d2.config.js` is 2.40.
 
-## Installing and upgrading
+## Prerequisites
 
-Download `tool-job-status-<version>.zip` from the
-[releases](../../releases) page and upload it in the DHIS2 App Management app.
+- Node.js 22
+- pnpm, in the version that `packageManager` in `package.json` names (`corepack enable` picks it up)
+- A DHIS2 instance to run against, for example a local one started as described in [DHIS2 in Docker](https://developers.dhis2.org/docs/tutorials/dhis2-docker/)
 
-**Upgrading from 0.x:** 1.0.0 is installed under a new app key (`tool-job-status`; the
-0.x versions used `Job-Status-Tool`), so DHIS2 treats it as a new app. Uninstall the
-old "Job Status Tool" app in App Management after installing 1.0.0, or two entries
-remain in the app menu.
+## Install the dependencies
 
-## Getting started
-
-Install dependencies (this project uses **pnpm**):
-
-```
+```bash
 pnpm install
 ```
 
-### Start the dev server
+## Start the tool against a local instance
 
-```
-pnpm start --proxy https://your-dhis2-instance
-```
-
-Then open the app and sign in with the instance's server URL and credentials.
-
-### Run tests
-
-```
-pnpm test          # jest unit + component tests
-pnpm lint          # eslint + prettier
+```bash
+pnpm start --proxy http://localhost:8080 --proxyPort 8081
 ```
 
-Playwright (Python) end-to-end scripts live in `tests/e2e/` (requires
-`pip install playwright && playwright install chromium`):
+The proxy listens on port 8080 unless you choose another, so `--proxyPort` keeps it off the instance's port. Open the URL that the dev server prints (usually `http://localhost:3000`), and sign in with `http://localhost:8081` as the server URL and a user of the instance.
 
-- `installed_app_test.py` — runs against the **installed bundle** on a live instance
-  (`BASE`, `USER_`, `PASS_`, `LABEL`, `SHOT_DIR`, `EXPECT_CANCEL` env vars): loads the app,
-  checks the lists and details modal, runs a built-in `TEST` job and exercises Cancel.
-  Used for the v40–v43 release test, see `docs/release-1.0.0-test/RESULTS.md`.
-- `executed_by_test.py` — verifies the "started by me" cancel rule with non-admin users.
-- `job_status_test.py` — smoke test against the dev server (`APP_URL`, `SERVER`,
-  `DHIS2_USER`, `DHIS2_PASS`).
+## Test, lint and build
 
-### Build a deployable zip
-
-```
-pnpm build         # produces build/bundle/tool-job-status-<version>.zip
+```bash
+pnpm test     # Jest unit and component tests (src/**/*.test.ts[x])
+pnpm lint     # Ultracite: Oxlint and Oxfmt over the DHIS2 house style
+pnpm format   # format with Oxfmt
+pnpm build    # build/bundle/tool-job-status-<version>.zip
 ```
 
-### Releasing
+The end-to-end suite in [`e2e/`](e2e/README.md) installs the built bundle on a throwaway instance and drives it with Playwright for Python. Read the warning in `e2e/README.md` before you run it.
 
-CI runs lint, typecheck, tests and the build on every pull request. Pushing a tag
-`vX.Y.Z` builds the bundle, extracts the matching `CHANGELOG.md` section and creates a
-GitHub release with the zip attached. Bump `version` in `package.json` and add the
-changelog section before tagging.
+Linting follows [LINTING.md](https://github.com/dhis2-utils/reference-tool-conventions/blob/main/LINTING.md) in reference-tool-conventions. `AGENTS.md` describes the house style for coding agents, and `.claude/` holds a Claude Code hook that lints each edited file. Nothing depends on them.
+
+## Release
+
+Releases follow [RELEASE-WORKFLOW.md](https://github.com/dhis2-utils/reference-tool-conventions/blob/main/RELEASE-WORKFLOW.md) in reference-tool-conventions:
+
+1. Bump `version` in `package.json` and add a `## [x.y.z]` section at the top of `CHANGELOG.md`.
+2. Merge to `main` and let CI pass.
+3. Tag the merged commit: `git tag vx.y.z && git push origin vx.y.z`.
+
+The tag starts `.github/workflows/release.yml`, which builds the bundle and creates the GitHub release with the zip attached and the changelog section as release notes.
 
 ## License
 
-© Copyright University of Oslo. See [LICENSE](./LICENSE).
+© Copyright University of Oslo. BSD-3-Clause, see [LICENSE](./LICENSE).
