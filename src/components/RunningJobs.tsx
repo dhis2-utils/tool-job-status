@@ -4,12 +4,12 @@ import styles from './RunningJobs.module.css'
 import { JobCard } from '@/components/JobCard'
 import type { EnhancedJob } from '@/types/jobs'
 
-type RunningJobsProps = {
+interface RunningJobsProps {
     jobs: EnhancedJob[]
     onViewDetails: (job: EnhancedJob) => void
 }
 
-type Grouped = {
+interface Grouped {
     queues: Array<{ name: string; jobs: EnhancedJob[] }>
     independent: EnhancedJob[]
 }
@@ -42,7 +42,7 @@ const groupRunningJobs = (jobs: EnhancedJob[]): Grouped => {
         }
     })
 
-    const queues = Array.from(queueMap.entries()).map(([name, queueJobs]) => ({
+    const queues = [...queueMap.entries()].map(([name, queueJobs]) => ({
         name,
         jobs: [...queueJobs].sort(
             (a, b) => (a.queuePosition ?? 0) - (b.queuePosition ?? 0)

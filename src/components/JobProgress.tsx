@@ -5,7 +5,7 @@ import styles from './JobProgress.module.css'
 import { useJobTasks } from '@/hooks/useJobTasks'
 import { deriveJobProgress } from '@/utils/jobParsing'
 
-type JobProgressProps = {
+interface JobProgressProps {
     jobType: string
     jobId: string
 }

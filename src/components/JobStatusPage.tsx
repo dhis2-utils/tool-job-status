@@ -28,11 +28,11 @@ export const JobStatusPage: React.FC = () => {
         const idle = jobs.filter(
             (job) => job.jobType !== 'HOUSEKEEPING' && !job.isRunning
         )
-        const lastJobs = idle
+        const last = idle
             .filter((job) => Boolean(job.lastExecutedStatus))
             .sort((a, b) => byDateDesc(a.lastFinished, b.lastFinished))
             .slice(0, MAX_LAST_JOBS)
-        const upcomingJobs = idle
+        const upcoming = idle
             .filter(
                 (job) =>
                     job.jobStatus === 'SCHEDULED' &&
@@ -40,7 +40,7 @@ export const JobStatusPage: React.FC = () => {
             )
             .sort((a, b) => byDateAsc(a.nextExecutionTime, b.nextExecutionTime))
             .slice(0, MAX_UPCOMING_JOBS)
-        return { lastJobs, upcomingJobs }
+        return { lastJobs: last, upcomingJobs: upcoming }
     }, [jobs])
 
     // Prefer the live entry so the modal tracks running state, but keep the

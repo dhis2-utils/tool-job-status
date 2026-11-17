@@ -11,7 +11,7 @@ import {
     formatTimeUntil,
 } from '@/utils/jobParsing'
 
-type JobListProps = {
+interface JobListProps {
     title: string
     jobs: EnhancedJob[]
     variant: 'last' | 'upcoming'

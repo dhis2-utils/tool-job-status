@@ -25,7 +25,7 @@ import {
     predictionSummaryRows,
 } from '@/utils/jobParsing'
 
-type JobDetailsModalProps = {
+interface JobDetailsModalProps {
     job: EnhancedJob
     /** False once the job has disappeared from the job list (deleted/cleaned up). */
     jobExists?: boolean

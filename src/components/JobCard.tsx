@@ -15,7 +15,7 @@ import { formatDateTime, formatDuration } from '@/utils/jobParsing'
 /** A manual analytics run is named e.g. "ANALYTICS_TABLE (1)". */
 const ANALYTICS_MANUAL_TITLE_REGEX = /^ANALYTICS_TABLE \(\d+\)$/
 
-type JobCardProps = {
+interface JobCardProps {
     job: EnhancedJob
     /** 1-based position within a queue, when rendered inside one. */
     queuePosition?: { index: number; total: number }

@@ -34,14 +34,16 @@ export const deriveJobProgress = (tasks: Task[] | undefined): JobProgress => {
             (t.level === 'LOOP' && LOOP_COUNTER_REGEX.test(t.message ?? '')) ||
             (t.level === 'INFO' && Boolean(t.message?.trim()))
     )
-    if (!latest) {
+    const latestMessage = latest?.message?.trim()
+    if (!latest || !latestMessage) {
         return { percentage: null, text: 'Running' }
     }
 
-    if (latest.level === 'LOOP') {
-        const match = latest.message!.match(LOOP_COUNTER_REGEX)!
-        const current = parseInt(match[1], 10)
-        const total = parseInt(match[2], 10)
+    const match =
+        latest.level === 'LOOP' ? latestMessage.match(LOOP_COUNTER_REGEX) : null
+    if (match) {
+        const current = Number.parseInt(match[1], 10)
+        const total = Number.parseInt(match[2], 10)
         const percentage =
             total > 0 ? Math.round((current / total) * 100) : null
         const actionTask = tasks?.find(
@@ -51,7 +53,7 @@ export const deriveJobProgress = (tasks: Task[] | undefined): JobProgress => {
         return { percentage, text: action }
     }
 
-    return { percentage: null, text: latest.message!.trim() }
+    return { percentage: null, text: latestMessage }
 }
 
 export interface PredictionSummary {

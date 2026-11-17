@@ -141,7 +141,7 @@ describe('parsePredictionSummary', () => {
         ]
         const summary = findPredictionSummary(tasks)
         expect(summary?.status).toBe('SUCCESS')
-        const rows = predictionSummaryRows(summary!)
+        const rows = summary ? predictionSummaryRows(summary) : []
         expect(rows[0]).toEqual({ label: 'Status', value: 'SUCCESS' })
         // Missing fields render as N/A
         expect(rows[2]).toEqual({ label: 'Inserted values', value: 'N/A' })
