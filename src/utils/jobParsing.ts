@@ -198,23 +198,81 @@ export const analyticsSkippedPrograms = (
     params: JobParameters = {}
 ): string[] => toArray(params.skipPrograms)
 
+const HAS_OFFSET_REGEX = /(?:[zZ]|[+-]\d{2}:?\d{2})$/
+
+/** Offset of `timeZone` from UTC at `epochMs`, in milliseconds. */
+const zoneOffsetMs = (timeZone: string, epochMs: number): number => {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        hourCycle: 'h23',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    }).formatToParts(new Date(epochMs))
+    const part = (type: Intl.DateTimeFormatPartTypes) =>
+        Number(parts.find((p) => p.type === type)?.value)
+    const wallClockAsUtc = Date.UTC(
+        part('year'),
+        part('month') - 1,
+        part('day'),
+        part('hour'),
+        part('minute'),
+        part('second')
+    )
+    return wallClockAsUtc - Math.floor(epochMs / 1000) * 1000
+}
+
+/**
+ * Parse a DHIS2 datetime to epoch milliseconds. DHIS2 sends job times as the
+ * server's wall-clock time with no offset ("2026-07-14T12:30:00.000"), so
+ * they are read in the server's time zone (`serverTimeZoneId` from
+ * system/info), not the browser's. A value with an explicit offset keeps it.
+ * Without a usable time zone, falls back to the browser's. NaN if invalid.
+ */
+export const parseServerDateTime = (
+    value: string,
+    timeZone?: string
+): number => {
+    const browserParsed = new Date(value).getTime()
+    if (!timeZone || HAS_OFFSET_REGEX.test(value)) {
+        return browserParsed
+    }
+    const wallClockAsUtc = Date.parse(`${value}Z`)
+    if (Number.isNaN(wallClockAsUtc)) {
+        return browserParsed
+    }
+    try {
+        // Two passes, so a time just after a DST change gets the new offset.
+        const guess = wallClockAsUtc - zoneOffsetMs(timeZone, wallClockAsUtc)
+        return wallClockAsUtc - zoneOffsetMs(timeZone, guess)
+    } catch {
+        // An unknown time zone id: Intl throws a RangeError.
+        return browserParsed
+    }
+}
+
 /**
  * Human-readable time until the next run. Improvement over the original, which
  * printed negative values for overdue jobs: clamps to a friendly "Due" / days.
+ * `serverTimeZone` is the zone `nextExecutionTime` is expressed in.
  */
 export const formatTimeUntil = (
     nextExecutionTime: string | undefined,
-    now: Date
+    now: Date,
+    serverTimeZone?: string
 ): string => {
     if (!nextExecutionTime) {
         return 'N/A'
     }
-    const next = new Date(nextExecutionTime)
-    if (Number.isNaN(next.getTime())) {
+    const next = parseServerDateTime(nextExecutionTime, serverTimeZone)
+    if (Number.isNaN(next)) {
         return 'N/A'
     }
 
-    const diffMinutes = Math.floor((next.getTime() - now.getTime()) / 60000)
+    const diffMinutes = Math.floor((next - now.getTime()) / 60000)
     if (diffMinutes <= 0) {
         return 'Due now'
     }

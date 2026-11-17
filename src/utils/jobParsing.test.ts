@@ -8,6 +8,7 @@ import {
     formatDuration,
     formatTimeUntil,
     isAnalyticsTableIncluded,
+    parseServerDateTime,
     parsePredictionSummary,
     predictionSummaryRows,
 } from '@/utils/jobParsing'
@@ -240,5 +241,67 @@ describe('formatTimeUntil', () => {
 
     it('shows "Due now" for past or imminent runs (improvement over raw negatives)', () => {
         expect(formatTimeUntil('2026-07-14T09:00:00.000Z', now)).toBe('Due now')
+    })
+})
+
+// DHIS2 sends job times as server wall-clock time with no offset
+// ("2026-07-14T12:30:00.000"); they must be read in the server's time zone,
+// not in the browser's.
+describe('parseServerDateTime', () => {
+    it('reads a time without offset in the server time zone', () => {
+        expect(
+            parseServerDateTime('2026-07-14T21:30:00.000', 'Asia/Tokyo')
+        ).toBe(Date.parse('2026-07-14T12:30:00.000Z'))
+        expect(
+            parseServerDateTime('2026-07-14T08:30:00.000', 'America/New_York')
+        ).toBe(Date.parse('2026-07-14T12:30:00.000Z'))
+        expect(parseServerDateTime('2026-07-14T12:30:00.000', 'Etc/UTC')).toBe(
+            Date.parse('2026-07-14T12:30:00.000Z')
+        )
+    })
+
+    it('follows daylight saving time in the server time zone', () => {
+        // Oslo is UTC+1 in January and UTC+2 in July.
+        expect(
+            parseServerDateTime('2026-01-14T13:30:00.000', 'Europe/Oslo')
+        ).toBe(Date.parse('2026-01-14T12:30:00.000Z'))
+        expect(
+            parseServerDateTime('2026-07-14T14:30:00.000', 'Europe/Oslo')
+        ).toBe(Date.parse('2026-07-14T12:30:00.000Z'))
+    })
+
+    it('keeps an explicit offset', () => {
+        expect(
+            parseServerDateTime('2026-07-14T12:30:00.000Z', 'Asia/Tokyo')
+        ).toBe(Date.parse('2026-07-14T12:30:00.000Z'))
+        expect(
+            parseServerDateTime('2026-07-14T14:30:00.000+02:00', 'Asia/Tokyo')
+        ).toBe(Date.parse('2026-07-14T12:30:00.000Z'))
+    })
+
+    it('falls back to the browser time zone without a usable server zone', () => {
+        const local = new Date('2026-07-14T12:30:00.000').getTime()
+        expect(parseServerDateTime('2026-07-14T12:30:00.000')).toBe(local)
+        expect(
+            parseServerDateTime('2026-07-14T12:30:00.000', 'Not/AZone')
+        ).toBe(local)
+    })
+
+    it('returns NaN for input that is not a date', () => {
+        expect(parseServerDateTime('not-a-date', 'Etc/UTC')).toBeNaN()
+    })
+})
+
+describe('formatTimeUntil with a server time zone', () => {
+    const now = new Date('2026-07-14T10:00:00.000Z')
+
+    it('counts down to a server wall-clock time, whatever the browser zone', () => {
+        // 21:30 in Tokyo is 12:30 UTC: 2h 30m after `now`.
+        expect(
+            formatTimeUntil('2026-07-14T21:30:00.000', now, 'Asia/Tokyo')
+        ).toBe('2h 30m')
+        expect(
+            formatTimeUntil('2026-07-14T08:30:00.000', now, 'America/New_York')
+        ).toBe('2h 30m')
     })
 })

@@ -1,3 +1,4 @@
+import { useConfig } from '@dhis2/app-runtime'
 import i18n from '@dhis2/d2-i18n'
 import { Card, Button } from '@dhis2/ui'
 import React from 'react'
@@ -28,6 +29,8 @@ export const JobList: React.FC<JobListProps> = ({
 }) => {
     // "Next run" is shown at minute granularity; a 30s tick keeps it honest.
     const now = useNow(30_000)
+    // Job times are the server's wall-clock time; count down in its zone.
+    const serverTimeZone = useConfig().systemInfo?.serverTimeZoneId
     return (
         <section className={styles.container}>
             <h3 className={styles.heading}>{title}</h3>
@@ -76,7 +79,8 @@ export const JobList: React.FC<JobListProps> = ({
                                             <dd>
                                                 {formatTimeUntil(
                                                     job.nextExecutionTime,
-                                                    now
+                                                    now,
+                                                    serverTimeZone
                                                 )}
                                             </dd>
                                         </>
