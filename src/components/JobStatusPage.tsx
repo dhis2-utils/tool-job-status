@@ -28,8 +28,13 @@ export const JobStatusPage: React.FC = () => {
         const idle = jobs.filter(
             (job) => job.jobType !== 'HOUSEKEEPING' && !job.isRunning
         )
+        // A job that has never run reports lastExecutedStatus NOT_STARTED.
         const last = idle
-            .filter((job) => Boolean(job.lastExecutedStatus))
+            .filter(
+                (job) =>
+                    Boolean(job.lastExecutedStatus) &&
+                    job.lastExecutedStatus !== 'NOT_STARTED'
+            )
             .sort((a, b) => byDateDesc(a.lastFinished, b.lastFinished))
             .slice(0, MAX_LAST_JOBS)
         const upcoming = idle

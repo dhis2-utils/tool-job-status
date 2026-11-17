@@ -52,6 +52,36 @@ describe('JobStatusPage', () => {
         expect(screen.getByText('Upcoming jobs')).toBeInTheDocument()
     })
 
+    it('leaves jobs that have never run out of Last jobs', () => {
+        // DHIS2 reports lastExecutedStatus NOT_STARTED for a job that has
+        // never run (seen on 2.40-2.43), with no lastExecuted.
+        mockUseJobs({
+            jobs: [
+                {
+                    id: 'ran',
+                    displayName: 'Ran once',
+                    jobType: 'DATA_STATISTICS',
+                    jobStatus: 'DISABLED',
+                    lastExecutedStatus: 'COMPLETED',
+                    lastExecuted: '2026-09-03T10:00:00.000',
+                    lastFinished: '2026-09-03T10:00:01.000',
+                    isRunning: false,
+                },
+                {
+                    id: 'never',
+                    displayName: 'Never ran',
+                    jobType: 'DATA_STATISTICS',
+                    jobStatus: 'DISABLED',
+                    lastExecutedStatus: 'NOT_STARTED',
+                    isRunning: false,
+                },
+            ],
+        })
+        renderWithProviders(<JobStatusPage />)
+        expect(screen.getByText('Ran once')).toBeInTheDocument()
+        expect(screen.queryByText('Never ran')).not.toBeInTheDocument()
+    })
+
     it('keeps the details modal open when the job disappears from the poll', async () => {
         const user = userEvent.setup()
         const job = {
