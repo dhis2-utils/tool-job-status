@@ -111,6 +111,36 @@ describe('JobStatusPage', () => {
         ).toHaveLength(1)
     })
 
+    it('leaves switched-off jobs out of Upcoming jobs', () => {
+        // A job switched off in the database can keep jobStatus SCHEDULED
+        // (seen on the Sierra Leone demo); the scheduler skips it anyway.
+        const scheduled = {
+            jobType: 'DATA_STATISTICS',
+            jobStatus: 'SCHEDULED',
+            nextExecutionTime: '2026-11-19T02:00:00.000',
+            isRunning: false,
+        }
+        mockUseJobs({
+            jobs: [
+                {
+                    ...scheduled,
+                    id: 'on',
+                    displayName: 'Switched on',
+                    enabled: true,
+                },
+                {
+                    ...scheduled,
+                    id: 'off',
+                    displayName: 'Switched off',
+                    enabled: false,
+                },
+            ],
+        })
+        render(<JobStatusPage />)
+        expect(screen.getByText('Switched on')).toBeInTheDocument()
+        expect(screen.queryByText('Switched off')).not.toBeInTheDocument()
+    })
+
     it('keeps the details modal open when the job disappears from the poll', async () => {
         const user = userEvent.setup()
         const job = {

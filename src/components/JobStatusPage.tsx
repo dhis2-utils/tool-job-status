@@ -41,6 +41,9 @@ export const JobStatusPage: React.FC = () => {
             .filter(
                 (job) =>
                     job.jobStatus === 'SCHEDULED' &&
+                    // The scheduler runs only enabled jobs; a job switched
+                    // off in the database can keep jobStatus SCHEDULED.
+                    job.enabled !== false &&
                     Boolean(job.nextExecutionTime)
             )
             .sort((a, b) => byDateAsc(a.nextExecutionTime, b.nextExecutionTime))

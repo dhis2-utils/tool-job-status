@@ -1,6 +1,6 @@
 {
     "name": "tool-job-status",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Tool to monitor DHIS2 background jobs",
     "license": "BSD-3-Clause",
     "private": true,

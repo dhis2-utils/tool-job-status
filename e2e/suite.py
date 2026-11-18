@@ -286,7 +286,7 @@ def idle_jobs():
         "/jobConfigurations",
         params={
             "paging": "false",
-            "fields": "displayName,jobType,jobStatus,lastExecutedStatus,"
+            "fields": "displayName,jobType,jobStatus,enabled,lastExecutedStatus,"
             "lastFinished,nextExecutionTime",
         },
     )
@@ -305,7 +305,14 @@ def expected_lists():
     # A job that has never run reports lastExecutedStatus NOT_STARTED.
     last = [j for j in jobs if j.get("lastExecutedStatus") not in (None, "", "NOT_STARTED")]
     last.sort(key=lambda j: j.get("lastFinished") or "", reverse=True)
-    upcoming = [j for j in jobs if j.get("jobStatus") == "SCHEDULED" and j.get("nextExecutionTime")]
+    # The scheduler runs only enabled jobs, whatever jobStatus says.
+    upcoming = [
+        j
+        for j in jobs
+        if j.get("jobStatus") == "SCHEDULED"
+        and j.get("enabled") is not False
+        and j.get("nextExecutionTime")
+    ]
     upcoming.sort(key=lambda j: j["nextExecutionTime"])
     return (
         [j["displayName"] for j in last[:MAX_LAST_JOBS]],

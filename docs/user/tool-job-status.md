@@ -29,9 +29,13 @@ If you used a 0.x version of the tool, uninstall the old "Job Status Tool" app a
 
 Open the Job Status Tool. The page **Background jobs** has three parts:
 
-- **Now running** shows each job that runs now, with a progress line. A job in a job queue is shown with the other jobs in its queue, with its position, for example "Job 2 of 3". When nothing runs, the page shows "No running jobs".
+- **Now running** shows each job that runs now, with a progress line. When a job in a job queue runs, the queue is shown in a box with all its jobs and their positions, for example "Job 2 of 3". When a queue runs, jobs outside any queue are shown in a box **Not in a queue**. When nothing runs, the page shows "No running jobs".
 - **Last jobs** shows the six jobs that finished most recently, with their status, the time they started and how long they ran.
-- **Upcoming jobs** shows the next ten scheduled jobs and the time until each one runs.
+- **Upcoming jobs** shows the next ten scheduled jobs that are switched on, and the time until each one runs.
+
+DHIS2 can run jobs of different types at the same time, so more than one job can be shown under **Now running**. Two jobs of the same type never run at the same time.
+
+To see the parameters of a running job, click **Parameters** on its card.
 
 All times are in the time zone of the DHIS2 server, which can be different from your own.
 

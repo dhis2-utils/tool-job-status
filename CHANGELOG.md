@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-11-18
+
+### Changed
+
+- The parameters of a running job are collapsed under **Parameters**, so the progress
+  line and Cancel stay in view; an analytics job alone has 14 parameter rows.
+- "Now running" is one heading for everything that runs. Each running queue is a
+  box labelled with the queue's name, and jobs outside a queue are labelled "Not in
+  a queue" when a queue runs too. Before, the box of jobs outside a queue was
+  titled "Now running", which made a running queue look separate from it.
+- The queue position ("Job 2 of 3") is a label aligned with the job name, not a grey
+  bar.
+
+### Fixed
+
+- Upcoming jobs leaves out jobs that are switched off. A job switched off directly
+  in the database can keep the status `SCHEDULED`, and the tool listed it, often as
+  "Due now"; the scheduler skips it (dhis2-core runs only `enabled` jobs, 2.40 to
+  2.43).
+- The spacing inside job cards. The DHIS2 UI `Card` sets its own `display`, which
+  overrode the card layout, so its gaps and bottom-aligned buttons were lost.
+
 ## [1.1.0] - 2026-11-18
 
 ### Changed
