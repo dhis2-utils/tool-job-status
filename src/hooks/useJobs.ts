@@ -40,6 +40,17 @@ const isTaskRunning = (tasks: Task[] | undefined): boolean => {
 }
 
 /**
+ * Whether the server holds any task message for a job. DHIS2 writes messages
+ * only for some job types (JobType.isUsingNotifications in dhis2-core; the
+ * others record errors only), keeps them in memory unless Redis is set up, so
+ * a restart loses them, and drops them after notifierMaxAgeDays (7) or beyond
+ * notifierMaxJobsPerType (500). The global map is a gist (newest and oldest
+ * message per job), which is enough to tell whether there are any.
+ */
+const hasTaskMessages = (tasks: Task[] | undefined): boolean =>
+    tasks?.some((task) => Boolean(task.message?.trim())) ?? false
+
+/**
  * Poll job configurations and the global task map together, and derive a
  * per-job `isRunning` flag. The global `system/tasks` map is used ONLY for the
  * cheap running-state check; live per-job progress comes from `useJobTasks`
@@ -72,12 +83,15 @@ export const useJobs = () => {
         // task poll is failing while configs keep refreshing, that frozen map
         // would keep a finished job "running", so fall back to jobStatus only.
         const tasks = tasksQuery.isError ? undefined : tasksQuery.data
-        return configs.map((job) => ({
-            ...job,
-            isRunning:
-                job.jobStatus === 'RUNNING' ||
-                isTaskRunning(tasks?.[job.jobType]?.[job.id]),
-        }))
+        return configs.map((job) => {
+            const jobTasks = tasks?.[job.jobType]?.[job.id]
+            return {
+                ...job,
+                isRunning:
+                    job.jobStatus === 'RUNNING' || isTaskRunning(jobTasks),
+                hasDetails: tasks ? hasTaskMessages(jobTasks) : undefined,
+            }
+        })
     }, [configQuery.data, tasksQuery.data, tasksQuery.isError])
 
     return {

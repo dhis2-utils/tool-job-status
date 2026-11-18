@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-09-03T19:24:38.092Z\n"
-"PO-Revision-Date: 2026-09-03T19:24:38.092Z\n"
+"POT-Creation-Date: 2026-11-18T07:24:29.240Z\n"
+"PO-Revision-Date: 2026-11-18T07:24:29.240Z\n"
 
 msgid "Cancelling…"
 msgstr "Cancelling…"
@@ -132,6 +132,27 @@ msgstr "Upcoming jobs"
 msgid "No upcoming jobs"
 msgstr "No upcoming jobs"
 
+msgid "Running"
+msgstr "Running"
+
+msgid "Scheduled"
+msgstr "Scheduled"
+
+msgid "Disabled"
+msgstr "Disabled"
+
+msgid "Completed"
+msgstr "Completed"
+
+msgid "Stopped"
+msgstr "Stopped"
+
+msgid "Failed"
+msgstr "Failed"
+
+msgid "Not started"
+msgstr "Not started"
+
 msgid "Unknown"
 msgstr "Unknown"
 
@@ -155,6 +176,39 @@ msgstr "Could not cancel job — {{message}}"
 
 msgid "unknown error"
 msgstr "unknown error"
+
+msgid "Processing"
+msgstr "Processing"
+
+msgid "N/A"
+msgstr "N/A"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Predictors"
+msgstr "Predictors"
+
+msgid "Inserted values"
+msgstr "Inserted values"
+
+msgid "Updated values"
+msgstr "Updated values"
+
+msgid "Deleted values"
+msgstr "Deleted values"
+
+msgid "Unchanged values"
+msgstr "Unchanged values"
+
+msgid "Due now"
+msgstr "Due now"
+
+msgid "{{days}}d {{hours}}h"
+msgstr "{{days}}d {{hours}}h"
+
+msgid "{{hours}}h {{minutes}}m"
+msgstr "{{hours}}h {{minutes}}m"
 
 msgctxt "Application title"
 msgid "__MANIFEST_APP_TITLE"

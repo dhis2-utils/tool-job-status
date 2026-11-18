@@ -18,7 +18,10 @@ import { useApiDataQuery } from '@/utils/useApiDataQuery'
 const CANCEL_AUTHORITIES = ['ALL', 'F_PERFORM_MAINTENANCE']
 const MIN_SERVER_MINOR_WITH_CANCEL = 41
 
-type Me = { id: string; authorities: string[] }
+interface Me {
+    id: string
+    authorities: string[]
+}
 
 /** Returns a predicate telling whether the current user may cancel a job. */
 export const useCanCancelJobs = (): ((job: JobConfiguration) => boolean) => {

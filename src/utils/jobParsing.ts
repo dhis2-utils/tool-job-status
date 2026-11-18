@@ -1,3 +1,4 @@
+import i18n from '@dhis2/d2-i18n'
 import type { JobParameters, Task } from '@/types/jobs'
 
 /*
@@ -34,25 +35,30 @@ export const deriveJobProgress = (tasks: Task[] | undefined): JobProgress => {
             (t.level === 'LOOP' && LOOP_COUNTER_REGEX.test(t.message ?? '')) ||
             (t.level === 'INFO' && Boolean(t.message?.trim()))
     )
-    if (!latest) {
-        return { percentage: null, text: 'Running' }
+    const latestMessage = latest?.message?.trim()
+    if (!latest || !latestMessage) {
+        return { percentage: null, text: i18n.t('Running') }
     }
 
-    if (latest.level === 'LOOP') {
-        const match = latest.message!.match(LOOP_COUNTER_REGEX)!
-        const current = parseInt(match[1], 10)
-        const total = parseInt(match[2], 10)
+    const match =
+        latest.level === 'LOOP' ? latestMessage.match(LOOP_COUNTER_REGEX) : null
+    if (match) {
+        const current = Number.parseInt(match[1], 10)
+        const total = Number.parseInt(match[2], 10)
         const percentage =
             total > 0 ? Math.round((current / total) * 100) : null
         const actionTask = tasks?.find(
             (task) => task.level === 'INFO' && Boolean(task.message?.trim())
         )
-        const action = actionTask?.message?.trim() || 'Processing'
+        const action = actionTask?.message?.trim() || i18n.t('Processing')
         return { percentage, text: action }
     }
 
-    return { percentage: null, text: latest.message!.trim() }
+    return { percentage: null, text: latestMessage }
 }
+
+/** Shown for a value the API did not send. */
+const notAvailable = (): string => i18n.t('N/A')
 
 export interface PredictionSummary {
     status?: string
@@ -114,12 +120,27 @@ export const findPredictionSummary = (
 export const predictionSummaryRows = (
     summary: PredictionSummary
 ): Array<{ label: string; value: string }> => [
-    { label: 'Status', value: summary.status ?? 'N/A' },
-    { label: 'Predictors', value: summary.predictors ?? 'N/A' },
-    { label: 'Inserted values', value: summary.inserted ?? 'N/A' },
-    { label: 'Updated values', value: summary.updated ?? 'N/A' },
-    { label: 'Deleted values', value: summary.deleted ?? 'N/A' },
-    { label: 'Unchanged values', value: summary.unchanged ?? 'N/A' },
+    { label: i18n.t('Status'), value: summary.status ?? notAvailable() },
+    {
+        label: i18n.t('Predictors'),
+        value: summary.predictors ?? notAvailable(),
+    },
+    {
+        label: i18n.t('Inserted values'),
+        value: summary.inserted ?? notAvailable(),
+    },
+    {
+        label: i18n.t('Updated values'),
+        value: summary.updated ?? notAvailable(),
+    },
+    {
+        label: i18n.t('Deleted values'),
+        value: summary.deleted ?? notAvailable(),
+    },
+    {
+        label: i18n.t('Unchanged values'),
+        value: summary.unchanged ?? notAvailable(),
+    },
 ]
 
 /**
@@ -196,35 +217,94 @@ export const analyticsSkippedPrograms = (
     params: JobParameters = {}
 ): string[] => toArray(params.skipPrograms)
 
+const HAS_OFFSET_REGEX = /(?:[zZ]|[+-]\d{2}:?\d{2})$/
+
+/** Offset of `timeZone` from UTC at `epochMs`, in milliseconds. */
+const zoneOffsetMs = (timeZone: string, epochMs: number): number => {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        hourCycle: 'h23',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    }).formatToParts(new Date(epochMs))
+    const part = (type: Intl.DateTimeFormatPartTypes) =>
+        Number(parts.find((p) => p.type === type)?.value)
+    const wallClockAsUtc = Date.UTC(
+        part('year'),
+        part('month') - 1,
+        part('day'),
+        part('hour'),
+        part('minute'),
+        part('second')
+    )
+    return wallClockAsUtc - Math.floor(epochMs / 1000) * 1000
+}
+
+/**
+ * Parse a DHIS2 datetime to epoch milliseconds. DHIS2 sends job times as the
+ * server's wall-clock time with no offset ("2026-07-14T12:30:00.000"), so
+ * they are read in the server's time zone (`serverTimeZoneId` from
+ * system/info), not the browser's. A value with an explicit offset keeps it.
+ * Without a usable time zone, falls back to the browser's. NaN if invalid.
+ */
+export const parseServerDateTime = (
+    value: string,
+    timeZone?: string
+): number => {
+    const browserParsed = new Date(value).getTime()
+    if (!timeZone || HAS_OFFSET_REGEX.test(value)) {
+        return browserParsed
+    }
+    const wallClockAsUtc = Date.parse(`${value}Z`)
+    if (Number.isNaN(wallClockAsUtc)) {
+        return browserParsed
+    }
+    try {
+        // Two passes, so a time just after a DST change gets the new offset.
+        const guess = wallClockAsUtc - zoneOffsetMs(timeZone, wallClockAsUtc)
+        return wallClockAsUtc - zoneOffsetMs(timeZone, guess)
+    } catch {
+        // An unknown time zone id: Intl throws a RangeError.
+        return browserParsed
+    }
+}
+
 /**
  * Human-readable time until the next run. Improvement over the original, which
  * printed negative values for overdue jobs: clamps to a friendly "Due" / days.
+ * `serverTimeZone` is the zone `nextExecutionTime` is expressed in.
  */
 export const formatTimeUntil = (
     nextExecutionTime: string | undefined,
-    now: Date
+    now: Date,
+    serverTimeZone?: string
 ): string => {
     if (!nextExecutionTime) {
-        return 'N/A'
+        return notAvailable()
     }
-    const next = new Date(nextExecutionTime)
-    if (Number.isNaN(next.getTime())) {
-        return 'N/A'
+    const next = parseServerDateTime(nextExecutionTime, serverTimeZone)
+    if (Number.isNaN(next)) {
+        return notAvailable()
     }
 
-    const diffMinutes = Math.floor((next.getTime() - now.getTime()) / 60000)
+    const diffMinutes = Math.floor((next - now.getTime()) / 60000)
     if (diffMinutes <= 0) {
-        return 'Due now'
+        return i18n.t('Due now')
     }
 
     const days = Math.floor(diffMinutes / (60 * 24))
     const hours = Math.floor((diffMinutes % (60 * 24)) / 60)
     const minutes = diffMinutes % 60
 
+    // No colon in these keys: the i18n extractor reads ':' as a namespace.
     if (days > 0) {
-        return `${days}d ${hours}h`
+        return i18n.t('{{days}}d {{hours}}h', { days, hours })
     }
-    return `${hours}h ${minutes}m`
+    return i18n.t('{{hours}}h {{minutes}}m', { hours, minutes })
 }
 
 const pad = (n: number): string => String(n).padStart(2, '0')
@@ -237,7 +317,7 @@ const pad = (n: number): string => String(n).padStart(2, '0')
  */
 export const formatDateTime = (iso: string | undefined): string => {
     if (!iso) {
-        return 'N/A'
+        return notAvailable()
     }
     const date = new Date(iso)
     if (Number.isNaN(date.getTime())) {
@@ -255,7 +335,7 @@ export const formatDateTime = (iso: string | undefined): string => {
  */
 export const formatDuration = (duration: string | undefined): string => {
     if (!duration) {
-        return 'N/A'
+        return notAvailable()
     }
     return duration.split('.')[0]
 }

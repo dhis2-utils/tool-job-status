@@ -1,9 +1,8 @@
-import { screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { JobStatusPage } from '@/components/JobStatusPage'
 import * as useJobsModule from '@/hooks/useJobs'
-import { renderWithProviders } from '@/test-utils'
 
 jest.mock('@/hooks/useJobs')
 // The details modal fetches task history; keep it inert for these tests.
@@ -33,23 +32,83 @@ describe('JobStatusPage', () => {
 
     it('shows a loader while the first fetch is in flight', () => {
         mockUseJobs({ isLoading: true })
-        renderWithProviders(<JobStatusPage />)
+        render(<JobStatusPage />)
         expect(screen.getByRole('progressbar')).toBeInTheDocument()
     })
 
     it('shows an error notice when the fetch fails', () => {
         mockUseJobs({ error: new Error('Network down') })
-        renderWithProviders(<JobStatusPage />)
+        render(<JobStatusPage />)
         expect(screen.getByText('Error loading jobs')).toBeInTheDocument()
         expect(screen.getByText('Network down')).toBeInTheDocument()
     })
 
     it('renders the empty running state and the two job lists', () => {
         mockUseJobs({ jobs: [] })
-        renderWithProviders(<JobStatusPage />)
+        render(<JobStatusPage />)
         expect(screen.getByText('No running jobs')).toBeInTheDocument()
         expect(screen.getByText('Last jobs')).toBeInTheDocument()
         expect(screen.getByText('Upcoming jobs')).toBeInTheDocument()
+    })
+
+    it('leaves jobs that have never run out of Last jobs', () => {
+        // DHIS2 reports lastExecutedStatus NOT_STARTED for a job that has
+        // never run (seen on 2.40-2.43), with no lastExecuted.
+        mockUseJobs({
+            jobs: [
+                {
+                    id: 'ran',
+                    displayName: 'Ran once',
+                    jobType: 'DATA_STATISTICS',
+                    jobStatus: 'DISABLED',
+                    lastExecutedStatus: 'COMPLETED',
+                    lastExecuted: '2026-09-03T10:00:00.000',
+                    lastFinished: '2026-09-03T10:00:01.000',
+                    isRunning: false,
+                },
+                {
+                    id: 'never',
+                    displayName: 'Never ran',
+                    jobType: 'DATA_STATISTICS',
+                    jobStatus: 'DISABLED',
+                    lastExecutedStatus: 'NOT_STARTED',
+                    isRunning: false,
+                },
+            ],
+        })
+        render(<JobStatusPage />)
+        expect(screen.getByText('Ran once')).toBeInTheDocument()
+        expect(screen.queryByText('Never ran')).not.toBeInTheDocument()
+    })
+
+    it('hides View details in Last jobs when the server holds no details', () => {
+        const finished = {
+            jobType: 'DATA_STATISTICS',
+            jobStatus: 'SCHEDULED',
+            lastExecutedStatus: 'COMPLETED',
+            lastFinished: '2026-09-03T10:00:01.000',
+            isRunning: false,
+        }
+        mockUseJobs({
+            jobs: [
+                {
+                    ...finished,
+                    id: 'a',
+                    displayName: 'Has details',
+                    hasDetails: true,
+                },
+                {
+                    ...finished,
+                    id: 'b',
+                    displayName: 'No details',
+                    hasDetails: false,
+                },
+            ],
+        })
+        render(<JobStatusPage />)
+        expect(
+            screen.getAllByRole('button', { name: 'View details' })
+        ).toHaveLength(1)
     })
 
     it('keeps the details modal open when the job disappears from the poll', async () => {
@@ -64,7 +123,7 @@ describe('JobStatusPage', () => {
             isRunning: false,
         }
         mockUseJobs({ jobs: [job] })
-        const { rerender } = renderWithProviders(<JobStatusPage />)
+        const { rerender } = render(<JobStatusPage />)
 
         await user.click(screen.getByRole('button', { name: 'View details' }))
         expect(screen.getByText(/Job details/)).toBeInTheDocument()

@@ -15,7 +15,7 @@ import { formatDateTime, formatDuration } from '@/utils/jobParsing'
 /** A manual analytics run is named e.g. "ANALYTICS_TABLE (1)". */
 const ANALYTICS_MANUAL_TITLE_REGEX = /^ANALYTICS_TABLE \(\d+\)$/
 
-type JobCardProps = {
+interface JobCardProps {
     job: EnhancedJob
     /** 1-based position within a queue, when rendered inside one. */
     queuePosition?: { index: number; total: number }
@@ -91,9 +91,11 @@ export const JobCard: React.FC<JobCardProps> = ({
 
                 <div className={styles.footer}>
                     {job.isRunning && <CancelJobButton job={job} />}
-                    <Button small onClick={() => onViewDetails(job)}>
-                        {i18n.t('View details')}
-                    </Button>
+                    {job.hasDetails !== false && (
+                        <Button small onClick={() => onViewDetails(job)}>
+                            {i18n.t('View details')}
+                        </Button>
+                    )}
                 </div>
             </Card>
         </div>

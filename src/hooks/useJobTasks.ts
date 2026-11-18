@@ -2,7 +2,7 @@ import { JOB_POLL_INTERVAL } from '@/hooks/useJobs'
 import type { Task } from '@/types/jobs'
 import { useApiDataQuery } from '@/utils/useApiDataQuery'
 
-type UseJobTasksOptions = {
+interface UseJobTasksOptions {
     /** Only fetch when true (e.g. modal open, or card is for a running job). */
     enabled?: boolean
     /** Keep polling on an interval (running jobs); false = fetch once. */

@@ -7,9 +7,13 @@ build
 # Package manager store (created when pnpm runs in-repo)
 .pnpm-store
 
-# Local agent/editor settings
-.claude/
+# Local agent settings (the shared .claude/settings.json and hooks are committed)
+.claude/settings.local.json
 
 # Misc
 .DS_Store
 *.log
+
+# e2e/run.sh output and Python caches
+e2e/results/
+__pycache__/

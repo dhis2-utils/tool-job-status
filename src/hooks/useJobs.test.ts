@@ -64,3 +64,49 @@ describe('useJobs running-state derivation', () => {
         expect(result.current.jobs[0].isRunning).toBe(false)
     })
 })
+
+describe('useJobs hasDetails', () => {
+    const otherJob = { ...completedJob, id: 'job2', displayName: 'Other' }
+    const done = (message: string) => ({
+        level: 'INFO',
+        time: 't',
+        completed: true,
+        message,
+    })
+
+    it('is true only for jobs the task map holds a message for', () => {
+        mockQueries(
+            { data: { jobConfigurations: [completedJob, otherJob] } },
+            {
+                data: {
+                    ANALYTICS_TABLE: {
+                        job1: [done('Analytics tables updated')],
+                    },
+                },
+            }
+        )
+        const { result } = renderHook(() => useJobs())
+        expect(result.current.jobs.map((job) => job.hasDetails)).toEqual([
+            true,
+            false,
+        ])
+    })
+
+    it('is false when the job only has empty messages', () => {
+        mockQueries(
+            { data: { jobConfigurations: [completedJob] } },
+            { data: { ANALYTICS_TABLE: { job1: [done(' ')] } } }
+        )
+        const { result } = renderHook(() => useJobs())
+        expect(result.current.jobs[0].hasDetails).toBe(false)
+    })
+
+    it('is unknown while the task map is loading or failing', () => {
+        mockQueries(
+            { data: { jobConfigurations: [completedJob] } },
+            { data: undefined, isError: true, error: new Error('timeout') }
+        )
+        const { result } = renderHook(() => useJobs())
+        expect(result.current.jobs[0].hasDetails).toBeUndefined()
+    })
+})

@@ -3,7 +3,7 @@
 **Date:** 2026-09-03
 **Bundle:** `build/bundle/tool-job-status-1.0.0.zip`, installed via `POST /api/apps`
 **Instances:** disposable, **empty** DHIS2 instances (no seed; only the default job
-configurations), 2 GB heap, created through d2-broker. Tested as the `local_admin`
+configurations), 2 GB heap, run locally in Docker. Tested as a
 superuser unless stated otherwise.
 **Harness:** Playwright (Python) against the installed bundle —
 `tests/e2e/installed_app_test.py` and `tests/e2e/executed_by_test.py`.

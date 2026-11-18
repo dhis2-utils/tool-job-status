@@ -1,3 +1,4 @@
+import { useConfig } from '@dhis2/app-runtime'
 import i18n from '@dhis2/d2-i18n'
 import { Card, Button } from '@dhis2/ui'
 import React from 'react'
@@ -11,7 +12,7 @@ import {
     formatTimeUntil,
 } from '@/utils/jobParsing'
 
-type JobListProps = {
+interface JobListProps {
     title: string
     jobs: EnhancedJob[]
     variant: 'last' | 'upcoming'
@@ -28,6 +29,8 @@ export const JobList: React.FC<JobListProps> = ({
 }) => {
     // "Next run" is shown at minute granularity; a 30s tick keeps it honest.
     const now = useNow(30_000)
+    // Job times are the server's wall-clock time; count down in its zone.
+    const serverTimeZone = useConfig().systemInfo?.serverTimeZoneId
     return (
         <section className={styles.container}>
             <h3 className={styles.heading}>{title}</h3>
@@ -76,22 +79,26 @@ export const JobList: React.FC<JobListProps> = ({
                                             <dd>
                                                 {formatTimeUntil(
                                                     job.nextExecutionTime,
-                                                    now
+                                                    now,
+                                                    serverTimeZone
                                                 )}
                                             </dd>
                                         </>
                                     )}
                                 </dl>
-                                {variant === 'last' && (
-                                    <div className={styles.footer}>
-                                        <Button
-                                            small
-                                            onClick={() => onViewDetails(job)}
-                                        >
-                                            {i18n.t('View details')}
-                                        </Button>
-                                    </div>
-                                )}
+                                {variant === 'last' &&
+                                    job.hasDetails !== false && (
+                                        <div className={styles.footer}>
+                                            <Button
+                                                small
+                                                onClick={() =>
+                                                    onViewDetails(job)
+                                                }
+                                            >
+                                                {i18n.t('View details')}
+                                            </Button>
+                                        </div>
+                                    )}
                             </Card>
                         </li>
                     ))}

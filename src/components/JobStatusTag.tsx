@@ -23,6 +23,28 @@ const tagColorForStatus = (
     }
 }
 
+/**
+ * Translatable labels for the statuses DHIS2 2.40-2.43 report. Functions, so
+ * that i18n.t runs at render time, after the locale has loaded.
+ */
+const STATUS_LABELS: Record<string, () => string> = {
+    RUNNING: () => i18n.t('Running'),
+    SCHEDULED: () => i18n.t('Scheduled'),
+    DISABLED: () => i18n.t('Disabled'),
+    COMPLETED: () => i18n.t('Completed'),
+    STOPPED: () => i18n.t('Stopped'),
+    FAILED: () => i18n.t('Failed'),
+    NOT_STARTED: () => i18n.t('Not started'),
+}
+
+/** A status this tool does not know is shown as the server sent it. */
+const statusLabel = (status: JobStatus | undefined): string => {
+    if (!status) {
+        return i18n.t('Unknown')
+    }
+    return STATUS_LABELS[status]?.() ?? status
+}
+
 export const JobStatusTag: React.FC<{ status?: JobStatus }> = ({ status }) => (
-    <Tag {...tagColorForStatus(status)}>{status || i18n.t('Unknown')}</Tag>
+    <Tag {...tagColorForStatus(status)}>{statusLabel(status)}</Tag>
 )

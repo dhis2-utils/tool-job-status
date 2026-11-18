@@ -1,10 +1,9 @@
-import { act, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { CANCEL_GRACE_MS, CancelJobButton } from '@/components/CancelJobButton'
 import * as useCanCancelJobsModule from '@/hooks/useCanCancelJobs'
 import * as useCancelJobModule from '@/hooks/useCancelJob'
-import { renderWithProviders } from '@/test-utils'
 import type { EnhancedJob } from '@/types/jobs'
 
 jest.mock('@/hooks/useCancelJob')
@@ -37,13 +36,13 @@ describe('CancelJobButton', () => {
         jest.spyOn(useCanCancelJobsModule, 'useCanCancelJobs').mockReturnValue(
             () => false
         )
-        const { container } = renderWithProviders(<CancelJobButton job={job} />)
+        const { container } = render(<CancelJobButton job={job} />)
         expect(container).toBeEmptyDOMElement()
     })
 
     it('asks for confirmation before cancelling', async () => {
         const user = userEvent.setup()
-        renderWithProviders(<CancelJobButton job={job} />)
+        render(<CancelJobButton job={job} />)
 
         expect(screen.queryByText('Cancel this job?')).not.toBeInTheDocument()
         await user.click(screen.getByTestId('cancel-job-button'))
@@ -53,7 +52,7 @@ describe('CancelJobButton', () => {
 
     it('does not cancel when the user keeps the job running', async () => {
         const user = userEvent.setup()
-        renderWithProviders(<CancelJobButton job={job} />)
+        render(<CancelJobButton job={job} />)
 
         await user.click(screen.getByTestId('cancel-job-button'))
         await user.click(screen.getByRole('button', { name: 'Keep running' }))
@@ -64,7 +63,7 @@ describe('CancelJobButton', () => {
 
     it('calls cancelJob with the job id on confirmation', async () => {
         const user = userEvent.setup()
-        renderWithProviders(<CancelJobButton job={job} />)
+        render(<CancelJobButton job={job} />)
 
         await user.click(screen.getByTestId('cancel-job-button'))
         const strip = screen.getByTestId('dhis2-uicore-buttonstrip')
@@ -82,7 +81,7 @@ describe('CancelJobButton', () => {
             opts?.onSettled?.()
         })
         const user = userEvent.setup()
-        renderWithProviders(<CancelJobButton job={job} />)
+        render(<CancelJobButton job={job} />)
 
         await user.click(screen.getByTestId('cancel-job-button'))
         const strip = screen.getByTestId('dhis2-uicore-buttonstrip')
@@ -105,7 +104,7 @@ describe('CancelJobButton', () => {
             const user = userEvent.setup({
                 advanceTimers: jest.advanceTimersByTime,
             })
-            renderWithProviders(<CancelJobButton job={job} />)
+            render(<CancelJobButton job={job} />)
 
             await user.click(screen.getByTestId('cancel-job-button'))
             const strip = screen.getByTestId('dhis2-uicore-buttonstrip')
@@ -133,9 +132,7 @@ describe('CancelJobButton', () => {
         })
         const user = userEvent.setup()
         const firstRun = { ...job, lastExecuted: '2026-09-03T10:00:00.000' }
-        const { rerender } = renderWithProviders(
-            <CancelJobButton job={firstRun} />
-        )
+        const { rerender } = render(<CancelJobButton job={firstRun} />)
 
         await user.click(screen.getByTestId('cancel-job-button'))
         const strip = screen.getByTestId('dhis2-uicore-buttonstrip')
