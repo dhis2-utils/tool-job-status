@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-11-18T07:24:29.240Z\n"
-"PO-Revision-Date: 2026-11-18T07:24:29.240Z\n"
+"POT-Creation-Date: 2026-11-18T10:48:14.282Z\n"
+"PO-Revision-Date: 2026-11-18T10:48:14.282Z\n"
 
 msgid "Cancelling…"
 msgstr "Cancelling…"
@@ -50,6 +50,9 @@ msgstr "Last executed"
 
 msgid "Last runtime"
 msgstr "Last runtime"
+
+msgid "Parameters"
+msgstr "Parameters"
 
 msgid "View details"
 msgstr "View details"
@@ -156,11 +159,17 @@ msgstr "Not started"
 msgid "Unknown"
 msgstr "Unknown"
 
+msgid "Now running"
+msgstr "Now running"
+
 msgid "No running jobs"
 msgstr "No running jobs"
 
-msgid "Now running"
-msgstr "Now running"
+msgid "Queue"
+msgstr "Queue"
+
+msgid "Not in a queue"
+msgstr "Not in a queue"
 
 msgid "Updated {{seconds}}s ago"
 msgstr "Updated {{seconds}}s ago"
