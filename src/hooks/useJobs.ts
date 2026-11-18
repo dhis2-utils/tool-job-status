@@ -13,6 +13,7 @@ const JOB_FIELDS = [
     'jobType',
     'jobStatus',
     'displayName',
+    'enabled',
     'jobParameters',
     'lastExecuted',
     'lastExecutedStatus',
