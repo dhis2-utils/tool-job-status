@@ -33,6 +33,10 @@
 
 Every run ended with the run record in `e2e-state/tool-job-status` deleted, the job configuration deleted and the app uninstalled (checked through the API after the 2.43 run).
 
+## Follow-up run (2026-11-18)
+
+After the low findings were fixed (translatable status labels and text), the suite ran again on 2.43.2.1 against a fresh build: 17/17 passed. The user documentation screenshots were taken again on that instance.
+
 ## The fixes, checked against the old code
 
 | Check | 1.0.0 code | Fixed code |

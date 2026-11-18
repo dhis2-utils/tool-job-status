@@ -5,7 +5,7 @@ DHIS2 versions tested: 2.40.12, 2.41.11, 2.42.7.1, 2.43.2.1 (empty databases)
 
 ## Summary
 
-The tool is in good shape: small, well structured and well tested. The review found two real bugs, both now fixed on this branch with unit tests and e2e checks that fail on the old bundle and pass on the fixed one. The serious one (H1) made "Next run" wrong whenever the browser and the DHIS2 server are in different time zones, which is the usual case for a remote administrator. With this branch merged, the e2e suite passes on 2.40 to 2.43, and the repo meets every machine-checkable rule of reference-tool-conventions except the cleanup of old working notes under `docs/` (C1), which needs the maintainer's decision.
+The tool is in good shape: small, well structured and well tested. The review found two real bugs, both now fixed on this branch with unit tests and e2e checks that fail on the old bundle and pass on the fixed one. The serious one (H1) made "Next run" wrong whenever the browser and the DHIS2 server are in different time zones, which is the usual case for a remote administrator. With this branch merged, the e2e suite passes on 2.40 to 2.43, and the repo meets every machine-checkable rule of reference-tool-conventions. The low findings are fixed too.
 
 ## Findings
 
@@ -27,9 +27,9 @@ The tool is in good shape: small, well structured and well tested. The review fo
 
 ### LOW
 
-#### L1. English text outside i18n — `src/utils/jobParsing.ts:39,52,277` and the prediction summary labels — "Running", "Processing", "N/A", "Due now", the `d`/`h`/`m` units and the prediction summary row labels are hard-coded, and `JobStatusTag` shows the raw status enum. Only `en` exists today, so nothing is visibly wrong; move them into `i18n.t` before the first translation.
+#### L1. English text outside i18n (fixed) — `src/utils/jobParsing.ts`, `src/components/JobStatusTag.tsx` — "Running", "Processing", "N/A", "Due now", the `d`/`h`/`m` countdown units and the prediction summary labels were hard-coded, and the status tag showed the raw enum (`COMPLETED`). All now go through `i18n.t`; the tag shows a label ("Completed") for the seven statuses DHIS2 2.40 to 2.43 report, and an unknown status as sent. All 19 keys were checked in the extracted `i18n/en.pot`, since the extractor silently drops some key shapes.
 
-#### L2. Pass-through test helper — `src/test-utils.tsx:10` — `renderWithProviders` is `render` under another name and provides nothing. Remove it, or make it provide the app-runtime and TanStack contexts so components can be tested without mocking every hook.
+#### L2. Pass-through test helper (fixed) — `src/test-utils.tsx` — `renderWithProviders` was `render` under another name. Removed; the component tests call `render`.
 
 #### L3. `executed_by_test.py` is outside the e2e contract — `e2e/executed_by_test.py` — the "started by me" Cancel rule is only checked by this manual script, which needs prepared users and a payload. The restricted-user half was checked by hand in this review (below). Folding it into `run.sh` needs a once-off job that a non-admin user starts and that runs long enough to see; an async import of real metadata would do, at the cost of more cleanup.
 
@@ -46,10 +46,10 @@ Checked against `conventions.yaml` version 2 and the prose, at reference-tool-co
 | User documentation in `docs/user/` | Missing | `index.yml`, `index.md`, `tool-job-status.md` with the required anchors, 3 screenshots |
 | `minDHIS2Version` in `d2.config.js` | Missing | `2.40` |
 | e2e in `e2e/` with the `run.sh` contract, warning README, `requirements.txt` | `tests/e2e/`, ad-hoc env vars, default user | `e2e/run.sh` contract version 1, `results.json`, dataStore run record |
-| `.sonarcloud.properties` | Missing | The four properties from TESTING.md, plus `src/test-utils.tsx` as test code |
+| `.sonarcloud.properties` | Missing | The four properties from TESTING.md |
 | Team-internal tooling strings | 3 occurrences in `docs/` and a default user in the e2e script | None left |
 | Changelog format | `### Upgrading from 0.x`, sections out of order, upgrade note without the role and bookmark points | Fixed; `[Unreleased]` section added |
-| C1. Working notes and agent plans under `docs/` | `docs/superpowers/` (agent design spec), `docs/review-2026-07-14-app-platform-migration/STATE-CHANGES.md` (ops log) | **Open**: DOCS.md says `docs/` is not a place for these. Removing them is the maintainer's decision. |
+| Working notes and agent plans under `docs/` | `docs/superpowers/` (agent design spec), `docs/review-2026-07-14-app-platform-migration/STATE-CHANGES.md` (ops log) | Removed, as the maintainer decided |
 
 Not checkable from the sandbox: whether CI is green on `main`, whether the v1.0.0 release has the bundle attached, the Dependabot settings, and whether the repo is public.
 
@@ -67,4 +67,4 @@ Not checkable from the sandbox: whether CI is green on `main`, whether the v1.0.
 ## Environment gaps
 
 - All four versions ran on empty databases, which have only the default job configurations. No scheduler queues, analytics runs or job types that report LOOP progress were exercised in the browser; the progress parsing and queue grouping are covered by unit and component tests only.
-- DHIS2 2.40 is out of upstream support (the supported majors are 2.41 to 2.43). It still works, so `minDHIS2Version` is 2.40; raise it when 2.40 support is no longer wanted.
+- DHIS2 2.40 is out of upstream support (the supported majors are 2.41 to 2.43). It still works, and the maintainer decided to keep it: `minDHIS2Version` is 2.40.
