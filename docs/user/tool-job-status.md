@@ -43,6 +43,12 @@ The tool does not show the housekeeping job, which runs every minute.
 
 ## See the details of a job { #tool-job-status-details }
 
+The button **View details** is shown only when the server holds messages for the job. The server does not keep messages for every job:
+
+- Only some job types write messages, for example analytics tables, resource tables, data synchronization, predictors and imports. Other job types, such as data statistics or file resource clean up, write messages only when they fail.
+- The server keeps the messages for 7 days, and for the last 500 jobs of each type.
+- Unless the server is set up with Redis, a restart of the server removes all messages.
+
 1. Find the job under **Now running** or **Last jobs**.
 2. Click **View details**.
 
@@ -72,6 +78,7 @@ If the job still runs 30 seconds after you cancelled it, the button **Cancel job
 
 - The tool shows what the DHIS2 API reports about jobs. It cannot always show the correct state. For example, if the server restarts while a job runs, DHIS2 can report the job as running after it has stopped.
 - Many job types do not report progress. For these jobs the progress line shows "Running" until the job ends.
+- Many jobs have no details to show, so **View details** is not shown for them. See [See the details of a job](#tool-job-status-details).
 - On DHIS2 2.40, you cannot cancel jobs, because 2.40 has no cancel function in its API.
 - The tool shows job types, such as ANALYTICS_TABLE, and job parameter names as DHIS2 reports them, in English. The messages in **Job details** come from the server, in the server's language.
 - The tool polls the server every three seconds while it is open. Close it when you do not need it, to save server load.

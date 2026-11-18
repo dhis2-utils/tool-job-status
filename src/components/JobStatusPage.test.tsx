@@ -81,6 +81,36 @@ describe('JobStatusPage', () => {
         expect(screen.queryByText('Never ran')).not.toBeInTheDocument()
     })
 
+    it('hides View details in Last jobs when the server holds no details', () => {
+        const finished = {
+            jobType: 'DATA_STATISTICS',
+            jobStatus: 'SCHEDULED',
+            lastExecutedStatus: 'COMPLETED',
+            lastFinished: '2026-09-03T10:00:01.000',
+            isRunning: false,
+        }
+        mockUseJobs({
+            jobs: [
+                {
+                    ...finished,
+                    id: 'a',
+                    displayName: 'Has details',
+                    hasDetails: true,
+                },
+                {
+                    ...finished,
+                    id: 'b',
+                    displayName: 'No details',
+                    hasDetails: false,
+                },
+            ],
+        })
+        render(<JobStatusPage />)
+        expect(
+            screen.getAllByRole('button', { name: 'View details' })
+        ).toHaveLength(1)
+    })
+
     it('keeps the details modal open when the job disappears from the poll', async () => {
         const user = userEvent.setup()
         const job = {

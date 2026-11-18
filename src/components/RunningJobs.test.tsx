@@ -87,4 +87,25 @@ describe('RunningJobs', () => {
         expect(screen.getByText('Job 1 of 2')).toBeInTheDocument()
         expect(screen.getByText('Job 2 of 2')).toBeInTheDocument()
     })
+
+    it('shows View details only when the server holds details for the job', () => {
+        render(
+            <RunningJobs
+                jobs={[
+                    job({ id: 'with', displayName: 'With', hasDetails: true }),
+                    job({
+                        id: 'without',
+                        displayName: 'Without',
+                        hasDetails: false,
+                    }),
+                    job({ id: 'unknown', displayName: 'Unknown yet' }),
+                ]}
+                onViewDetails={() => undefined}
+            />
+        )
+        // Shown when there are details, and when it is not known yet.
+        expect(
+            screen.getAllByRole('button', { name: 'View details' })
+        ).toHaveLength(2)
+    })
 })

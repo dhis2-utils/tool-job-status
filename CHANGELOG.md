@@ -19,6 +19,11 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **View details** is shown only for jobs that the server holds task messages for.
+  Many job types write none, and the server drops them after 7 days or a restart,
+  so the button used to open an empty window.
+- The progress bar of a running job spans the whole progress box. It had the
+  fixed 300 px default width of the DHIS2 UI loader.
 - "Next run" in Upcoming jobs counts down in the server's time zone. DHIS2 sends job
   times without a time zone, and the tool read them in the browser's zone, so when
   the two differed the countdown was off by the difference: a browser 9 hours ahead

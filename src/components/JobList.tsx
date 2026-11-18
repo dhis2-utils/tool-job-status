@@ -86,16 +86,19 @@ export const JobList: React.FC<JobListProps> = ({
                                         </>
                                     )}
                                 </dl>
-                                {variant === 'last' && (
-                                    <div className={styles.footer}>
-                                        <Button
-                                            small
-                                            onClick={() => onViewDetails(job)}
-                                        >
-                                            {i18n.t('View details')}
-                                        </Button>
-                                    </div>
-                                )}
+                                {variant === 'last' &&
+                                    job.hasDetails !== false && (
+                                        <div className={styles.footer}>
+                                            <Button
+                                                small
+                                                onClick={() =>
+                                                    onViewDetails(job)
+                                                }
+                                            >
+                                                {i18n.t('View details')}
+                                            </Button>
+                                        </div>
+                                    )}
                             </Card>
                         </li>
                     ))}

@@ -23,7 +23,13 @@ export const JobProgress: React.FC<JobProgressProps> = ({ jobType, jobId }) => {
     return (
         <div className={styles.progress}>
             {percentage !== null && (
-                <LinearLoader amount={percentage} className={styles.loader} />
+                <LinearLoader
+                    amount={percentage}
+                    // The loader's own default width is a fixed 300px.
+                    width="100%"
+                    margin="0"
+                    className={styles.loader}
+                />
             )}
             <div className={styles.text}>
                 {/*

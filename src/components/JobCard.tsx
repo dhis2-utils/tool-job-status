@@ -91,9 +91,11 @@ export const JobCard: React.FC<JobCardProps> = ({
 
                 <div className={styles.footer}>
                     {job.isRunning && <CancelJobButton job={job} />}
-                    <Button small onClick={() => onViewDetails(job)}>
-                        {i18n.t('View details')}
-                    </Button>
+                    {job.hasDetails !== false && (
+                        <Button small onClick={() => onViewDetails(job)}>
+                            {i18n.t('View details')}
+                        </Button>
+                    )}
                 </div>
             </Card>
         </div>

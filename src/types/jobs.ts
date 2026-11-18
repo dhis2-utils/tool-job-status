@@ -90,4 +90,10 @@ export interface JobConfigurationsResponse {
 /** A JobConfiguration enriched with derived running state. */
 export interface EnhancedJob extends JobConfiguration {
     isRunning: boolean
+    /**
+     * Whether the server holds task messages for this job, so the details
+     * modal has something to show. Undefined while that is not known (task
+     * map loading or failing).
+     */
+    hasDetails?: boolean
 }
