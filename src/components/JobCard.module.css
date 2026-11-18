@@ -12,8 +12,13 @@
     max-inline-size: 620px;
 }
 
-.inner {
+.cardBox {
     inline-size: 100%;
+}
+
+.inner {
+    block-size: 100%;
+    box-sizing: border-box;
     padding: var(--spacers-dp16);
     display: flex;
     flex-direction: column;
@@ -53,14 +58,27 @@
 }
 
 .position {
-    align-self: flex-start;
-    margin-block-end: var(--spacers-dp4);
-    background-color: var(--colors-grey200);
-    color: var(--colors-grey800);
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 11px;
+    color: var(--colors-grey700);
+    font-size: 12px;
     font-weight: 500;
+    line-height: 16px;
+}
+
+.parameters {
+    margin-block-start: var(--spacers-dp8);
+    font-size: 13px;
+}
+
+.parametersSummary {
+    cursor: pointer;
+    inline-size: fit-content;
+    color: var(--colors-grey800);
+    font-weight: 500;
+}
+
+.parametersSummary:focus-visible {
+    outline: 2px solid var(--colors-blue600);
+    outline-offset: 2px;
 }
 
 .footer {

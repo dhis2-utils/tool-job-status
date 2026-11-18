@@ -40,65 +40,73 @@ export const JobList: React.FC<JobListProps> = ({
                 <ul className={styles.list}>
                     {jobs.map((job) => (
                         <li key={job.id}>
-                            <Card className={styles.item}>
-                                <div className={styles.itemHeader}>
-                                    <strong className={styles.name}>
-                                        {job.displayName}
-                                    </strong>
-                                    {variant === 'last' ? (
-                                        <JobStatusTag
-                                            status={job.lastExecutedStatus}
-                                        />
-                                    ) : (
-                                        <JobStatusTag status={job.jobStatus} />
-                                    )}
+                            <Card>
+                                <div className={styles.item}>
+                                    <div className={styles.itemHeader}>
+                                        <strong className={styles.name}>
+                                            {job.displayName}
+                                        </strong>
+                                        {variant === 'last' ? (
+                                            <JobStatusTag
+                                                status={job.lastExecutedStatus}
+                                            />
+                                        ) : (
+                                            <JobStatusTag
+                                                status={job.jobStatus}
+                                            />
+                                        )}
+                                    </div>
+                                    <dl className={styles.meta}>
+                                        <dt>{i18n.t('Type')}</dt>
+                                        <dd>{job.jobType}</dd>
+                                        {variant === 'last' ? (
+                                            <>
+                                                <dt>{i18n.t('ID')}</dt>
+                                                <dd>{job.id}</dd>
+                                                <dt>
+                                                    {i18n.t('Last executed')}
+                                                </dt>
+                                                <dd>
+                                                    {formatDateTime(
+                                                        job.lastExecuted
+                                                    )}
+                                                </dd>
+                                                <dt>
+                                                    {i18n.t('Last runtime')}
+                                                </dt>
+                                                <dd>
+                                                    {formatDuration(
+                                                        job.lastRuntimeExecution
+                                                    )}
+                                                </dd>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <dt>{i18n.t('Next run')}</dt>
+                                                <dd>
+                                                    {formatTimeUntil(
+                                                        job.nextExecutionTime,
+                                                        now,
+                                                        serverTimeZone
+                                                    )}
+                                                </dd>
+                                            </>
+                                        )}
+                                    </dl>
+                                    {variant === 'last' &&
+                                        job.hasDetails !== false && (
+                                            <div className={styles.footer}>
+                                                <Button
+                                                    small
+                                                    onClick={() =>
+                                                        onViewDetails(job)
+                                                    }
+                                                >
+                                                    {i18n.t('View details')}
+                                                </Button>
+                                            </div>
+                                        )}
                                 </div>
-                                <dl className={styles.meta}>
-                                    <dt>{i18n.t('Type')}</dt>
-                                    <dd>{job.jobType}</dd>
-                                    {variant === 'last' ? (
-                                        <>
-                                            <dt>{i18n.t('ID')}</dt>
-                                            <dd>{job.id}</dd>
-                                            <dt>{i18n.t('Last executed')}</dt>
-                                            <dd>
-                                                {formatDateTime(
-                                                    job.lastExecuted
-                                                )}
-                                            </dd>
-                                            <dt>{i18n.t('Last runtime')}</dt>
-                                            <dd>
-                                                {formatDuration(
-                                                    job.lastRuntimeExecution
-                                                )}
-                                            </dd>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <dt>{i18n.t('Next run')}</dt>
-                                            <dd>
-                                                {formatTimeUntil(
-                                                    job.nextExecutionTime,
-                                                    now,
-                                                    serverTimeZone
-                                                )}
-                                            </dd>
-                                        </>
-                                    )}
-                                </dl>
-                                {variant === 'last' &&
-                                    job.hasDetails !== false && (
-                                        <div className={styles.footer}>
-                                            <Button
-                                                small
-                                                onClick={() =>
-                                                    onViewDetails(job)
-                                                }
-                                            >
-                                                {i18n.t('View details')}
-                                            </Button>
-                                        </div>
-                                    )}
                             </Card>
                         </li>
                     ))}

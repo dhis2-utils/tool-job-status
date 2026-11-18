@@ -22,7 +22,7 @@ const isMonitorable = (job: EnhancedJob) => job.jobType !== 'HOUSEKEEPING'
  *  - A queue is "active" if any of its (non-housekeeping) jobs is running.
  *    Active queues show ALL their jobs (so the operator sees what's next in
  *    line), ordered by queue position.
- *  - Jobs with no queue that are running show under "Now running".
+ *  - Running jobs with no queue are listed after the queues.
  */
 const groupRunningJobs = (jobs: EnhancedJob[]): Grouped => {
     const activeQueues = new Set(
@@ -67,23 +67,38 @@ export const RunningJobs: React.FC<RunningJobsProps> = ({
 
     const hasActiveJobs = queues.length > 0 || independent.length > 0
 
-    if (!hasActiveJobs) {
-        return (
-            <div className={styles.empty} data-test="no-running-jobs">
-                {i18n.t('No running jobs')}
-            </div>
-        )
-    }
+    const independentCards = (
+        <div className={styles.cards}>
+            {independent.map((job) => (
+                <JobCard key={job.id} job={job} onViewDetails={onViewDetails} />
+            ))}
+        </div>
+    )
 
     return (
         <div className={styles.container}>
+            {/* One heading for everything that runs: queues and jobs outside a
+                queue are groups under it, not separate sections. */}
+            <h3 className={styles.heading}>{i18n.t('Now running')}</h3>
+
+            {!hasActiveJobs && (
+                <div className={styles.empty} data-test="no-running-jobs">
+                    {i18n.t('No running jobs')}
+                </div>
+            )}
+
             {queues.map((queue) => (
                 <div
                     key={queue.name}
-                    className={styles.queue}
+                    className={styles.group}
                     data-test="job-queue"
                 >
-                    <h4 className={styles.queueTitle}>{queue.name}</h4>
+                    <h4 className={styles.groupTitle}>
+                        <span className={styles.groupLabel}>
+                            {i18n.t('Queue')}
+                        </span>{' '}
+                        {queue.name}
+                    </h4>
                     <div className={styles.cards}>
                         {queue.jobs.map((job, index) => (
                             <JobCard
@@ -100,22 +115,17 @@ export const RunningJobs: React.FC<RunningJobsProps> = ({
                 </div>
             ))}
 
-            {independent.length > 0 && (
-                <div className={styles.queue}>
-                    <h4 className={styles.queueTitle}>
-                        {i18n.t('Now running')}
+            {/* Label jobs outside a queue only when there are queues to tell
+                them apart from. */}
+            {independent.length > 0 && queues.length > 0 && (
+                <div className={styles.group}>
+                    <h4 className={styles.groupTitle}>
+                        {i18n.t('Not in a queue')}
                     </h4>
-                    <div className={styles.cards}>
-                        {independent.map((job) => (
-                            <JobCard
-                                key={job.id}
-                                job={job}
-                                onViewDetails={onViewDetails}
-                            />
-                        ))}
-                    </div>
+                    {independentCards}
                 </div>
             )}
+            {independent.length > 0 && queues.length === 0 && independentCards}
         </div>
     )
 }
