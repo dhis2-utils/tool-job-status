@@ -37,6 +37,12 @@ Every run ended with the run record in `e2e-state/tool-job-status` deleted, the 
 
 After the low findings were fixed (translatable status labels and text), the suite ran again on 2.43.2.1 against a fresh build: 17/17 passed. The user documentation screenshots were taken again on that instance.
 
+## Follow-up from manual testing (2026-11-18)
+
+Manual testing found that **View details** opened an empty window for most jobs, and that the progress bar used only part of its box. In dhis2-core (2.40.12, 2.41.11, 2.42.7.1 and 2.43.2.1 alike), task messages are written only by the job types in `JobType.isUsingNotifications()`; the others record errors only. Messages are kept in memory unless Redis is configured, for `notifierMaxAgeDays` (7) and the newest `notifierMaxJobsPerType` (500) jobs per type. The app now shows the button only when `GET /api/system/tasks` holds a message for the job. The suite gained `details-hidden` (a `TEST` job has no button) and runs a `RESOURCE_TABLE` job for `details-modal`. It passed 18/18 on 2.43.2.1 with the Sierra Leone demo database; the other versions were not run again.
+
+The suite also failed to start on an instance that had its own `TEST` job scheduled for 05:00 on 1 January (DHIS2 refuses a second job of one type with the same cron, E7000), and it treated a queued job as finished. Both are fixed: the suite picks a random time on 1 January and waits for a new `lastExecuted`.
+
 ## The fixes, checked against the old code
 
 | Check | 1.0.0 code | Fixed code |

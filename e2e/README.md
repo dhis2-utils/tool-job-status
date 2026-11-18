@@ -1,5 +1,5 @@
 > [!WARNING]
-> This suite changes and deletes data. It installs and uninstalls the app, creates and deletes a job configuration, and runs and cancels a job. Run it only against a throwaway DHIS2 instance that you can reset or recreate, never against a server that holds work you want to keep.
+> This suite changes and deletes data. It installs and uninstalls the app, creates and deletes two job configurations, runs and cancels a job, and regenerates the resource tables. Run it only against a throwaway DHIS2 instance that you can reset or recreate, never against a server that holds work you want to keep.
 
 # End-to-end tests
 
@@ -46,12 +46,13 @@ Exit codes: `0` every test passed, `1` a test failed, `2` the suite could not ru
 | `cancel-visibility`                                   | Cancel is shown to a superuser on 2.41 and later, and hidden on 2.40, which has no cancel endpoint                                               |
 | `cancel-flow`, `cancel-stops-job`                     | Cancel and confirm show the success alert, and the server then reports the job as `STOPPED` (skipped on 2.40)                                    |
 | `card-clears`                                         | The card leaves "Now running" once the job has stopped                                                                                           |
-| `in-last-jobs`, `details-modal`                       | The finished job is in Last jobs, and its details modal opens and closes                                                                         |
+| `in-last-jobs`, `details-hidden`                      | The finished `TEST` job is in Last jobs, without View details, because `TEST` writes no task messages                                            |
+| `details-modal`                                       | A `RESOURCE_TABLE` run, which writes task messages, has View details, and its modal shows the newest message the API holds                       |
 | `no-errors`                                           | No page errors, console errors or failed responses, apart from the platform messages listed in `suite.py`                                        |
 
 ## Seeding and cleanup
 
-The job configuration gets a run-unique name, `E2E tool-job-status <timestamp>`. Before creating it, the suite records its UID in the dataStore at `e2e-state/tool-job-status`. Every run first deletes whatever that record still lists, so a run that was killed half-way is cleaned up by the next one. After a clean run the record is gone and the app is uninstalled.
+The suite creates two job configurations, a `TEST` job and a `RESOURCE_TABLE` job, with run-unique names that start with `E2E tool-job-status <timestamp>`. Before creating each, it records the UID in the dataStore at `e2e-state/tool-job-status`. Every run first deletes whatever that record still lists, so a run that was killed half-way is cleaned up by the next one. After a clean run the record is gone and the app is uninstalled.
 
 ## Optional manual check
 

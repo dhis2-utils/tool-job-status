@@ -60,8 +60,11 @@ TEST_JOB_PARAMS = {"stages": 3, "items": 10, "itemDuration": 1500}
 # The browser runs in a zone far from any server's, so the countdown to the
 # next run is only right if the app reads job times in the server's zone.
 BROWSER_TIME_ZONE = "Pacific/Kiritimati"
-# A cron that never fires during a run (05:00 on 1 January).
-NEVER_CRON = "0 0 5 1 1 ?"
+# Jobs are scheduled at a random time on 1 January, so they never fire during
+# a run. Random, because DHIS2 refuses two jobs of one type with the same
+# cron (E7000), and an instance can hold a TEST job of its own.
+def never_cron():
+    return f"{random.randrange(60)} {random.randrange(60)} {random.randrange(24)} 1 1 ?"
 # Responses that are expected and not errors. The 2.42+ global shell asks for
 # the instance's custom banner logo, which an instance without one answers 404.
 # The platform's app adapter looks up optional custom translations; without
@@ -253,27 +256,28 @@ def uninstall_app(app_key):
 # ── Seeding ──────────────────────────────────────────────────────────────
 
 
-def create_test_job(state, run_id):
+def create_job(state, name, job_type, params=None):
+    """Create a job configuration that never runs on its own; return its UID."""
     uid = new_uid()
-    name = f"{NAME_PREFIX} {run_id}"
     record_object(state, "jobConfigurations", uid)
-    status, resp = api(
-        "POST",
-        "/jobConfigurations",
-        {
-            "id": uid,
-            "name": name,
-            "jobType": "TEST",
-            "cronExpression": NEVER_CRON,
-            "jobParameters": TEST_JOB_PARAMS,
-        },
-    )
+    body = {"id": uid, "name": name, "jobType": job_type, "cronExpression": never_cron()}
+    if params:
+        body["jobParameters"] = params
+    status, resp = api("POST", "/jobConfigurations", body)
     if status not in (200, 201):
-        raise SetupError(f"could not create the TEST job configuration ({status}): {resp}")
+        raise SetupError(f"could not create the {job_type} job configuration ({status}): {resp}")
     status, job = api("GET", f"/jobConfigurations/{uid}", params={"fields": "id,name"})
     if status != 200 or job.get("name") != name:
-        raise SetupError("the TEST job configuration was not stored")
-    return uid, name
+        raise SetupError(f"the {job_type} job configuration was not stored")
+    return uid
+
+
+def task_messages(job_type, uid):
+    """The non-empty messages the server holds for a job, newest first."""
+    status, tasks = api("GET", f"/system/tasks/{job_type}/{uid}")
+    if status != 200 or not isinstance(tasks, list):
+        return []
+    return [t["message"].strip() for t in tasks if (t.get("message") or "").strip()]
 
 
 def idle_jobs():
@@ -331,6 +335,23 @@ def job_state(uid):
         params={"fields": "jobStatus,lastExecutedStatus,lastExecuted"},
     )
     return job if isinstance(job, dict) else {}
+
+
+def wait_for_run(uid, before, timeout_s):
+    """Wait until a run that started after `before` (lastExecuted) has ended.
+
+    execute only queues a job; the scheduler starts it a few seconds later,
+    so "not RUNNING" alone can still mean "not started yet".
+    """
+    deadline = time.time() + timeout_s
+    state = job_state(uid)
+    while time.time() < deadline:
+        state = job_state(uid)
+        started = state.get("lastExecuted") and state.get("lastExecuted") != before
+        if started and state.get("jobStatus") != "RUNNING":
+            return state
+        time.sleep(2)
+    return state
 
 
 def wait_until_not_running(uid, timeout_s):
@@ -559,23 +580,56 @@ def test_card_clears(ui, res, uid):
     res.check("card-clears", ok, f"server: {final}")
 
 
-def test_details_modal(ui, res, name):
-    item = ui.section(TEXT_LAST_JOBS).locator("li", has_text=name)
+def last_jobs_item(ui, name):
+    return ui.section(TEXT_LAST_JOBS).locator(
+        "li", has=ui.root.locator(f"strong:text-is('{name}')")
+    )
+
+
+def test_details_hidden(ui, res, uid, name):
+    """The TEST job writes no task messages, so it has no details button."""
+    item = last_jobs_item(ui, name)
     try:
         item.wait_for(timeout=20000)
     except PlaywrightError:
         res.check("in-last-jobs", False, "the finished TEST job is not in Last jobs")
-        res.add("details-modal", "skip", "job not in Last jobs")
+        res.add("details-hidden", "skip", "job not in Last jobs")
         return
     res.check("in-last-jobs", True)
-    item.get_by_role("button", name=TEXT_VIEW_DETAILS).click()
+    messages = task_messages("TEST", uid)
+    if messages:
+        res.add("details-hidden", "skip", f"this server wrote messages for TEST: {messages[:1]}")
+        return
+    shown = item.get_by_role("button", name=TEXT_VIEW_DETAILS).count()
+    res.check("details-hidden", shown == 0, "" if shown == 0 else "View details shown without messages")
+
+
+def test_details_modal(ui, res, uid, name):
+    """A RESOURCE_TABLE run writes messages; its modal shows the newest one."""
+    before = job_state(uid).get("lastExecuted")
+    status, body = api("POST", f"/jobConfigurations/{uid}/execute")
+    if not 200 <= status < 300:
+        res.check("details-modal", False, f"could not run RESOURCE_TABLE ({status}): {body}")
+        return
+    final = wait_for_run(uid, before, 240)
+    messages = task_messages("RESOURCE_TABLE", uid)
+    if not messages:
+        res.check("details-modal", False, f"server holds no messages for the run; job: {final}")
+        return
+    button = last_jobs_item(ui, name).get_by_role("button", name=TEXT_VIEW_DETAILS)
+    try:
+        button.wait_for(timeout=20000)
+    except PlaywrightError:
+        res.check("details-modal", False, "no View details for a job with messages")
+        return
+    button.click()
     title = ui.root.get_by_text(f"{TEXT_JOB_DETAILS} — {name}", exact=False)
     try:
         title.wait_for(timeout=15000)
+        ui.root.get_by_text(messages[0], exact=False).first.wait_for(timeout=15000)
+        shows_message = True
     except PlaywrightError:
-        res.check("details-modal", False, "modal did not open")
-        return
-    ui.page.wait_for_timeout(1500)
+        shows_message = False
     ui.shot("modal")
     ui.root.locator(SEL_BUTTON_STRIP).get_by_role("button", name="Close").click()
     try:
@@ -583,7 +637,11 @@ def test_details_modal(ui, res, name):
         closed = True
     except PlaywrightError:
         closed = False
-    res.check("details-modal", closed, "" if closed else "modal did not close")
+    res.check(
+        "details-modal",
+        shows_message and closed,
+        f"newest message {messages[0]!r} shown: {shows_message}, closed: {closed}",
+    )
 
 
 def test_no_errors(res, events):
@@ -595,7 +653,8 @@ def test_no_errors(res, events):
 
 
 def run_ui(ctx_args):
-    app_key, uid, name, minor, label, results_dir, res = ctx_args
+    app_key, jobs, minor, label, results_dir, res = ctx_args
+    uid, name = jobs["test"]
     events = EventLog()
     with sync_playwright() as pw:
         browser = pw.chromium.launch(args=["--disable-dev-shm-usage"])
@@ -619,7 +678,8 @@ def run_ui(ctx_args):
                 else:
                     test_cancel_hidden_on_240(ui, res)
                 test_card_clears(ui, res, uid)
-                test_details_modal(ui, res, name)
+                test_details_hidden(ui, res, uid, name)
+            test_details_modal(ui, res, *jobs["resource_tables"])
             ui.shot("final")
             test_no_errors(res, events)
         finally:
@@ -660,9 +720,14 @@ def main():
         run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
         state = {"run": run_id, "objects": []}
         write_state(state)
-        uid, name = create_test_job(state, run_id)
+        test_name = f"{NAME_PREFIX} {run_id} test"
+        rt_name = f"{NAME_PREFIX} {run_id} resource tables"
+        jobs = {
+            "test": (create_job(state, test_name, "TEST", TEST_JOB_PARAMS), test_name),
+            "resource_tables": (create_job(state, rt_name, "RESOURCE_TABLE"), rt_name),
+        }
         stage = "suite"
-        run_ui((app_key, uid, name, server_minor(version), label, results_dir, res))
+        run_ui((app_key, jobs, server_minor(version), label, results_dir, res))
     except (SetupError, PlaywrightError, OSError, KeyError, ValueError) as exc:
         report["error"] = f"{stage}: {exc}"
         print(f"ERROR during {stage}: {exc}", file=sys.stderr)
