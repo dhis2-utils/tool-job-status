@@ -8,10 +8,14 @@ All notable changes to this project will be documented in this file.
 
 - Lint and format with Ultracite (Oxlint and Oxfmt) over the DHIS2 house style,
   replacing ESLint and Prettier.
-- `minDHIS2Version` is set to 2.40 in `d2.config.js`, so it reaches the manifest.
+- `minDHIS2Version` is set to 2.40 in `d2.config.js`.
 - The end-to-end suite moved to `e2e/` and follows the `e2e/run.sh` contract of
   reference-tool-conventions.
 - User documentation in `docs/user/`.
+- Status tags show a translatable label ("Completed", "Stopped") instead of the
+  server's status code (`COMPLETED`, `STOPPED`), and the remaining fixed English
+  text ("N/A", "Due now", the countdown units, the prediction summary labels) can
+  be translated.
 
 ### Fixed
 

@@ -1,9 +1,8 @@
-import { screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { JobStatusPage } from '@/components/JobStatusPage'
 import * as useJobsModule from '@/hooks/useJobs'
-import { renderWithProviders } from '@/test-utils'
 
 jest.mock('@/hooks/useJobs')
 // The details modal fetches task history; keep it inert for these tests.
@@ -33,20 +32,20 @@ describe('JobStatusPage', () => {
 
     it('shows a loader while the first fetch is in flight', () => {
         mockUseJobs({ isLoading: true })
-        renderWithProviders(<JobStatusPage />)
+        render(<JobStatusPage />)
         expect(screen.getByRole('progressbar')).toBeInTheDocument()
     })
 
     it('shows an error notice when the fetch fails', () => {
         mockUseJobs({ error: new Error('Network down') })
-        renderWithProviders(<JobStatusPage />)
+        render(<JobStatusPage />)
         expect(screen.getByText('Error loading jobs')).toBeInTheDocument()
         expect(screen.getByText('Network down')).toBeInTheDocument()
     })
 
     it('renders the empty running state and the two job lists', () => {
         mockUseJobs({ jobs: [] })
-        renderWithProviders(<JobStatusPage />)
+        render(<JobStatusPage />)
         expect(screen.getByText('No running jobs')).toBeInTheDocument()
         expect(screen.getByText('Last jobs')).toBeInTheDocument()
         expect(screen.getByText('Upcoming jobs')).toBeInTheDocument()
@@ -77,7 +76,7 @@ describe('JobStatusPage', () => {
                 },
             ],
         })
-        renderWithProviders(<JobStatusPage />)
+        render(<JobStatusPage />)
         expect(screen.getByText('Ran once')).toBeInTheDocument()
         expect(screen.queryByText('Never ran')).not.toBeInTheDocument()
     })
@@ -94,7 +93,7 @@ describe('JobStatusPage', () => {
             isRunning: false,
         }
         mockUseJobs({ jobs: [job] })
-        const { rerender } = renderWithProviders(<JobStatusPage />)
+        const { rerender } = render(<JobStatusPage />)
 
         await user.click(screen.getByRole('button', { name: 'View details' }))
         expect(screen.getByText(/Job details/)).toBeInTheDocument()

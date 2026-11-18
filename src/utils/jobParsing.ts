@@ -1,3 +1,4 @@
+import i18n from '@dhis2/d2-i18n'
 import type { JobParameters, Task } from '@/types/jobs'
 
 /*
@@ -36,7 +37,7 @@ export const deriveJobProgress = (tasks: Task[] | undefined): JobProgress => {
     )
     const latestMessage = latest?.message?.trim()
     if (!latest || !latestMessage) {
-        return { percentage: null, text: 'Running' }
+        return { percentage: null, text: i18n.t('Running') }
     }
 
     const match =
@@ -49,12 +50,15 @@ export const deriveJobProgress = (tasks: Task[] | undefined): JobProgress => {
         const actionTask = tasks?.find(
             (task) => task.level === 'INFO' && Boolean(task.message?.trim())
         )
-        const action = actionTask?.message?.trim() || 'Processing'
+        const action = actionTask?.message?.trim() || i18n.t('Processing')
         return { percentage, text: action }
     }
 
     return { percentage: null, text: latestMessage }
 }
+
+/** Shown for a value the API did not send. */
+const notAvailable = (): string => i18n.t('N/A')
 
 export interface PredictionSummary {
     status?: string
@@ -116,12 +120,27 @@ export const findPredictionSummary = (
 export const predictionSummaryRows = (
     summary: PredictionSummary
 ): Array<{ label: string; value: string }> => [
-    { label: 'Status', value: summary.status ?? 'N/A' },
-    { label: 'Predictors', value: summary.predictors ?? 'N/A' },
-    { label: 'Inserted values', value: summary.inserted ?? 'N/A' },
-    { label: 'Updated values', value: summary.updated ?? 'N/A' },
-    { label: 'Deleted values', value: summary.deleted ?? 'N/A' },
-    { label: 'Unchanged values', value: summary.unchanged ?? 'N/A' },
+    { label: i18n.t('Status'), value: summary.status ?? notAvailable() },
+    {
+        label: i18n.t('Predictors'),
+        value: summary.predictors ?? notAvailable(),
+    },
+    {
+        label: i18n.t('Inserted values'),
+        value: summary.inserted ?? notAvailable(),
+    },
+    {
+        label: i18n.t('Updated values'),
+        value: summary.updated ?? notAvailable(),
+    },
+    {
+        label: i18n.t('Deleted values'),
+        value: summary.deleted ?? notAvailable(),
+    },
+    {
+        label: i18n.t('Unchanged values'),
+        value: summary.unchanged ?? notAvailable(),
+    },
 ]
 
 /**
@@ -265,26 +284,27 @@ export const formatTimeUntil = (
     serverTimeZone?: string
 ): string => {
     if (!nextExecutionTime) {
-        return 'N/A'
+        return notAvailable()
     }
     const next = parseServerDateTime(nextExecutionTime, serverTimeZone)
     if (Number.isNaN(next)) {
-        return 'N/A'
+        return notAvailable()
     }
 
     const diffMinutes = Math.floor((next - now.getTime()) / 60000)
     if (diffMinutes <= 0) {
-        return 'Due now'
+        return i18n.t('Due now')
     }
 
     const days = Math.floor(diffMinutes / (60 * 24))
     const hours = Math.floor((diffMinutes % (60 * 24)) / 60)
     const minutes = diffMinutes % 60
 
+    // No colon in these keys: the i18n extractor reads ':' as a namespace.
     if (days > 0) {
-        return `${days}d ${hours}h`
+        return i18n.t('{{days}}d {{hours}}h', { days, hours })
     }
-    return `${hours}h ${minutes}m`
+    return i18n.t('{{hours}}h {{minutes}}m', { hours, minutes })
 }
 
 const pad = (n: number): string => String(n).padStart(2, '0')
@@ -297,7 +317,7 @@ const pad = (n: number): string => String(n).padStart(2, '0')
  */
 export const formatDateTime = (iso: string | undefined): string => {
     if (!iso) {
-        return 'N/A'
+        return notAvailable()
     }
     const date = new Date(iso)
     if (Number.isNaN(date.getTime())) {
@@ -315,7 +335,7 @@ export const formatDateTime = (iso: string | undefined): string => {
  */
 export const formatDuration = (duration: string | undefined): string => {
     if (!duration) {
-        return 'N/A'
+        return notAvailable()
     }
     return duration.split('.')[0]
 }

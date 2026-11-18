@@ -62,7 +62,7 @@ The tool does not show the housekeeping job, which runs every minute.
 2. Click **Cancel job**.
 3. In the window **Cancel this job?**, click **Cancel job** to confirm. To leave the job running, click **Keep running**.
 
-   The button changes to **Cancelling…**. The job stops at its next checkpoint, which can take a few seconds. When it has stopped, it moves to **Last jobs** with the status STOPPED.
+   The button changes to **Cancelling…**. The job stops at its next checkpoint, which can take a few seconds. When it has stopped, it moves to **Last jobs** with the status **Stopped**.
 
 ![The Cancel this job? window](resources/images/tool-job-status/cancel.png)
 
@@ -73,5 +73,5 @@ If the job still runs 30 seconds after you cancelled it, the button **Cancel job
 - The tool shows what the DHIS2 API reports about jobs. It cannot always show the correct state. For example, if the server restarts while a job runs, DHIS2 can report the job as running after it has stopped.
 - Many job types do not report progress. For these jobs the progress line shows "Running" until the job ends.
 - On DHIS2 2.40, you cannot cancel jobs, because 2.40 has no cancel function in its API.
-- The tool shows the job type and parameter names as DHIS2 reports them, in English. Status names such as RUNNING and STOPPED are not translated.
+- The tool shows job types, such as ANALYTICS_TABLE, and job parameter names as DHIS2 reports them, in English. The messages in **Job details** come from the server, in the server's language.
 - The tool polls the server every three seconds while it is open. Close it when you do not need it, to save server load.

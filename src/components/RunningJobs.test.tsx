@@ -1,7 +1,6 @@
-import { screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import React from 'react'
 import { RunningJobs } from '@/components/RunningJobs'
-import { renderWithProviders } from '@/test-utils'
 import type { EnhancedJob } from '@/types/jobs'
 
 // JobProgress polls the per-job endpoint and CancelJobButton mutates via the
@@ -32,14 +31,12 @@ const job = (overrides: Partial<EnhancedJob>): EnhancedJob => ({
 
 describe('RunningJobs', () => {
     it('shows the empty state when nothing is running', () => {
-        renderWithProviders(
-            <RunningJobs jobs={[]} onViewDetails={() => undefined} />
-        )
+        render(<RunningJobs jobs={[]} onViewDetails={() => undefined} />)
         expect(screen.getByText('No running jobs')).toBeInTheDocument()
     })
 
     it('excludes HOUSEKEEPING from the running view', () => {
-        renderWithProviders(
+        render(
             <RunningJobs
                 jobs={[
                     job({
@@ -55,7 +52,7 @@ describe('RunningJobs', () => {
     })
 
     it('renders an independent running job under "Now running"', () => {
-        renderWithProviders(
+        render(
             <RunningJobs
                 jobs={[job({ displayName: 'Lonely job' })]}
                 onViewDetails={() => undefined}
@@ -83,9 +80,7 @@ describe('RunningJobs', () => {
                 jobStatus: 'SCHEDULED',
             }),
         ]
-        renderWithProviders(
-            <RunningJobs jobs={jobs} onViewDetails={() => undefined} />
-        )
+        render(<RunningJobs jobs={jobs} onViewDetails={() => undefined} />)
         expect(screen.getByText('nightly')).toBeInTheDocument()
         expect(screen.getByText('First')).toBeInTheDocument()
         expect(screen.getByText('Second')).toBeInTheDocument()
