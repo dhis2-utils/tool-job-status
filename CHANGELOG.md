@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2] - 2026-11-19
+
+### Fixed
+
+- The app icon. It was set with a key the App Platform does not read, so the App
+  Management app showed a blank placeholder. The standard 96x96 admin tool icon is
+  now in `public/dhis2-app-icon.png`, where the platform looks for it.
+- The developer shown in App Management: the manifest now names HISP Centre -
+  University of Oslo.
+
 ## [1.1.1] - 2026-11-18
 
 ### Changed
