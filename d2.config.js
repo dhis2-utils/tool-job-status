@@ -4,7 +4,7 @@ const config = {
     name: 'tool-job-status',
     title: 'Job Status Tool',
     description: 'Tool to monitor DHIS2 background jobs',
-    icon: './src/app-icon.png',
+    author: 'HISP Centre - University of Oslo',
     minDHIS2Version: '2.40',
 
     entryPoints: {
